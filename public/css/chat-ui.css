@@ -343,3 +343,283 @@
   font-size: 0.85rem;
   color: var(--gold-light);
 }
+
+/* ── パネル基底 ── */
+.panel {
+  min-height: 100vh;
+}
+
+/* ── ハンバーガーメニュー ── */
+.app-menu {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 100;
+}
+
+.app-menu-toggle {
+  background: var(--bg-card);
+  border: 1px solid var(--border-rpg);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease;
+}
+
+.app-menu-toggle:hover {
+  border-color: var(--border-gold);
+}
+
+.app-menu-drawer {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-rpg);
+  border-radius: 8px;
+  min-width: 160px;
+  overflow: hidden;
+  transform-origin: top right;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.app-menu-drawer[aria-hidden="true"] {
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+}
+
+.app-menu-drawer[aria-hidden="false"] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.app-menu-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-rpg);
+  color: var(--text-primary);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.88rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.app-menu-item:last-child {
+  border-bottom: none;
+}
+
+.app-menu-item:hover {
+  background: var(--bg-card-hover);
+}
+
+/* ── 展示会タイマー ── */
+.exhibition-timer {
+  position: fixed;
+  top: 12px;
+  left: 16px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-rpg);
+  border-radius: 8px;
+  padding: 8px 14px;
+}
+
+.timer-icon {
+  font-size: 0.9rem;
+}
+
+#timer-display {
+  font-family: 'Pixelify Sans', cursive;
+  font-size: 1.1rem;
+  color: var(--gold-primary);
+  min-width: 40px;
+}
+
+.timer-display--warn {
+  color: var(--danger) !important;
+  animation: timer-pulse 1s ease-in-out infinite;
+}
+
+@keyframes timer-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* ── モード選択画面（mm-） ── */
+.mm-mode-select {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.mm-title {
+  font-family: 'Pixelify Sans', cursive;
+  font-size: 2rem;
+  color: var(--gold-primary);
+  margin-bottom: 12px;
+}
+
+.mm-subtitle {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+}
+
+.mm-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mm-btn {
+  background: var(--bg-card);
+  border: 2px solid var(--border-rpg);
+  border-radius: 12px;
+  padding: 20px 24px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.mm-btn:hover {
+  border-color: var(--border-gold);
+  background: var(--bg-card-hover);
+}
+
+.mm-btn-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.mm-btn-label {
+  font-family: 'Pixelify Sans', cursive;
+  font-size: 1.1rem;
+  color: var(--gold-primary);
+}
+
+.mm-btn-desc {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── 結果カード（rc-） ── */
+#result-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  min-height: 100vh;
+}
+
+.rc-card {
+  max-width: 400px;
+  width: 100%;
+  padding: 32px 24px;
+  text-align: center;
+  position: relative;
+  animation: rc-fadein 0.5s ease;
+}
+
+@keyframes rc-fadein {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.rc-constellation {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.rc-title {
+  font-family: 'Pixelify Sans', cursive;
+  font-size: 1.4rem;
+  color: var(--gold-primary);
+  margin-bottom: 24px;
+}
+
+.rc-info {
+  border: 1px solid var(--border-rpg);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.rc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-rpg);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.88rem;
+}
+
+.rc-row:last-child {
+  border-bottom: none;
+}
+
+.rc-label {
+  color: var(--text-muted);
+}
+
+.rc-value {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.rc-replay-btn {
+  background: var(--gold-primary);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 32px;
+  color: #0a0e1a;
+  font-family: 'Pixelify Sans', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.rc-replay-btn:hover {
+  background: var(--gold-light);
+  transform: scale(1.03);
+}
+
+/* ── 流れ星アニメーション（rc-shooting-star） ── */
+.rc-shooting-star {
+  position: fixed;
+  left: -120px;
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ffffff, rgba(255, 255, 255, 0.4));
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 9998;
+  animation: rc-shoot 0.75s ease-out forwards;
+}
+
+@keyframes rc-shoot {
+  0%   { transform: translateX(0) translateY(0) rotate(-15deg); opacity: 1; }
+  100% { transform: translateX(calc(100vw + 200px)) translateY(30px) rotate(-15deg); opacity: 0; }
+}

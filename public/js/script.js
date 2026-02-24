@@ -495,6 +495,8 @@ const gameState = {
   messages: [],
   turnCount: 0,
   constellationStars: 0,
+  problemType: null,   // 1〜7
+  cleared: false,      // クリア済みフラグ（二重発火防止）
 };
 
 // ── DOMContentLoaded ──
@@ -504,23 +506,152 @@ document.addEventListener('DOMContentLoaded', () => {
   initApp();
 });
 
-// ── アプリ初期化 ──
+// ══════════════════════════════════════════
+// 初期化・画面遷移
+// ══════════════════════════════════════════
+
+/** アプリ初期化: モード未指定なら選択UI、あれば即ゲーム開始 */
 async function initApp() {
+  ModeManager.stopTimer();
+  if (!ModeManager.hasMode()) {
+    ModeManager.showModeSelection(mode => {
+      gameState.mode = mode;
+      startGame();
+    });
+    return;
+  }
+  await startGame();
+}
+
+/** ゲーム開始: アプリシェルを構築→偉人選択画面 */
+async function startGame() {
+  buildAppShell();
+
   const isExhibition = gameState.mode === GAME_CONFIG.MODES.EXHIBITION;
   const config = isExhibition ? GAME_CONFIG.EXHIBITION : GAME_CONFIG.FULL;
-
   const allSages = await SageProfileLoader.loadCore();
   const sagesToShow = isExhibition
     ? allSages.filter(s => config.sages.includes(s.id))
     : allSages;
 
+  if (isExhibition) {
+    ModeManager.startTimer(config.timeLimit, handleTimerEnd);
+  }
+
   showSageSelection(sagesToShow);
 }
 
-// ── 偉人選択画面を表示 ──
-function showSageSelection(sages) {
+/** 展示会タイマー終了時 */
+function handleTimerEnd() {
+  ErrorHandler.showErrorToast('時間終了！またチャレンジしてね！');
+  setTimeout(() => goHome(), 2500);
+}
+
+/** ホームへ戻る（偉人選択画面に戻す） */
+function goHome() {
+  initApp();
+}
+
+// ══════════════════════════════════════════
+// DOM シェル構築（全パネルを一括生成）
+// ══════════════════════════════════════════
+
+function buildAppShell() {
   const app = document.getElementById('app');
   app.innerHTML = `
+    <!-- ハンバーガーメニュー -->
+    <div id="app-menu" class="app-menu">
+      <button id="menu-toggle" class="app-menu-toggle" aria-label="メニューを開く">☰</button>
+      <div id="menu-drawer" class="app-menu-drawer" aria-hidden="true">
+        <button class="app-menu-item" id="menu-collection">📕 偉人図鑑</button>
+        <button class="app-menu-item" id="menu-home">🏠 偉人選択に戻る</button>
+      </div>
+    </div>
+
+    <!-- 展示会タイマー（展示会モードのみ表示） -->
+    <div id="exhibition-timer" class="exhibition-timer" style="display:none">
+      <span class="timer-icon">⏱</span>
+      <span id="timer-display">5:00</span>
+    </div>
+
+    <!-- Panel: 偉人選択 -->
+    <div id="sage-selection" class="panel"></div>
+
+    <!-- Panel: チャット -->
+    <div id="chat-container" class="panel" style="display:none">
+      <div id="chat-header-bar" class="chat-header"></div>
+      <div class="chat-screen">
+        <div id="chat-messages" class="chat-messages"></div>
+      </div>
+      <div class="chat-input-container">
+        <div class="chat-input-bar">
+          <textarea id="chat-input" placeholder="メッセージを入力...（Enterで送信）" rows="1"></textarea>
+          <button class="chat-send-btn" id="send-btn">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: 結果カード -->
+    <div id="result-card" class="panel" style="display:none"></div>
+
+    <!-- Panel: 偉人図鑑 -->
+    <div id="sage-collection" class="panel" style="display:none"></div>
+  `;
+
+  // 入力欄イベント（一度だけ設定）
+  document.getElementById('send-btn').addEventListener('click', () => {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (text) {
+      input.value = '';
+      input.style.height = 'auto';
+      sendMessage(text);
+    }
+  });
+  document.getElementById('chat-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      document.getElementById('send-btn').click();
+    }
+  });
+  document.getElementById('chat-input').addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+
+  // ハンバーガーメニュー
+  const toggle = document.getElementById('menu-toggle');
+  const drawer = document.getElementById('menu-drawer');
+  toggle.addEventListener('click', () => {
+    const isOpen = drawer.getAttribute('aria-hidden') === 'false';
+    drawer.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
+  });
+  document.getElementById('menu-collection').addEventListener('click', async () => {
+    drawer.setAttribute('aria-hidden', 'true');
+    const allSages = await SageProfileLoader.loadCore();
+    document.getElementById('sage-collection').innerHTML = SageCollection.renderHTMLSync(allSages);
+    showPanel('sage-collection');
+  });
+  document.getElementById('menu-home').addEventListener('click', () => {
+    drawer.setAttribute('aria-hidden', 'true');
+    goHome();
+  });
+}
+
+/** パネル切り替え（他パネルを非表示） */
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => { p.style.display = 'none'; });
+  const el = document.getElementById(id);
+  if (el) el.style.display = '';
+}
+
+// ══════════════════════════════════════════
+// 偉人選択画面
+// ══════════════════════════════════════════
+
+function showSageSelection(sages) {
+  const panel = document.getElementById('sage-selection');
+  panel.innerHTML = `
     <div class="sage-selection-screen">
       <div class="sage-selection-header">
         <div class="sage-selection-title">AI冒険の書</div>
@@ -537,81 +668,55 @@ function showSageSelection(sages) {
       </div>
     </div>
   `;
+  showPanel('sage-selection');
 
-  // 演出: 登場アニメーション
-  Onboarding.animateSageCards(app);
+  Onboarding.animateSageCards(panel);
 
-  // 展示会モード: チュートリアル Tip を表示
   if (gameState.mode === GAME_CONFIG.MODES.EXHIBITION) {
-    Onboarding.showExhibitionTip(app.querySelector('.sage-selection-header'));
+    Onboarding.showExhibitionTip(panel.querySelector('.sage-selection-header'));
   }
 
-  // カードクリック: 選択演出 → チャット開始
-  app.querySelectorAll('.sage-card').forEach(card => {
+  panel.querySelectorAll('.sage-card').forEach(card => {
     card.addEventListener('click', () => {
-      const sageId = card.dataset.sageId;
-      Onboarding.selectCard(card, () => startChat(sageId));
+      Onboarding.selectCard(card, () => startChat(card.dataset.sageId));
     });
   });
 }
 
-// ── チャット開始 ──
+// ══════════════════════════════════════════
+// チャット
+// ══════════════════════════════════════════
+
 async function startChat(sageId) {
   gameState.selectedSage = sageId;
   gameState.messages = [];
   gameState.turnCount = 0;
   gameState.constellationStars = 0;
+  gameState.cleared = false;
+  gameState.problemType = Math.floor(Math.random() * 7) + 1;
 
   const profile = await SageProfileLoader.getMergedProfile(sageId);
-  const app = document.getElementById('app');
 
-  app.innerHTML = `
-    <div class="chat-header">
-      <span class="chat-header-icon">${profile ? profile.icon : '💬'}</span>
-      <div>
-        <div class="chat-header-name">${profile ? profile.name : sageId}</div>
-        <div class="chat-header-field">${profile ? profile.field : ''}</div>
-      </div>
+  // チャットヘッダー更新
+  const headerBar = document.getElementById('chat-header-bar');
+  headerBar.innerHTML = `
+    <span class="chat-header-icon">${profile?.icon || '💬'}</span>
+    <div>
+      <div class="chat-header-name">${profile?.name || sageId}</div>
+      <div class="chat-header-field">${profile?.field || ''}</div>
     </div>
-    <div class="chat-screen">
-      <div id="chat-messages" class="chat-messages"></div>
-    </div>
-    <div class="chat-input-container">
-      <div class="chat-input-bar">
-        <textarea id="chat-input" placeholder="メッセージを入力...（Enterで送信）" rows="1"></textarea>
-        <button class="chat-send-btn" id="send-btn">➤</button>
-      </div>
-    </div>
+    ${ConstellationIcon.createHTML(0)}
   `;
 
-  document.getElementById('send-btn').addEventListener('click', () => {
-    const input = document.getElementById('chat-input');
-    const text = input.value.trim();
-    if (text) {
-      input.value = '';
-      input.style.height = 'auto';
-      sendMessage(text);
-    }
-  });
+  // メッセージ欄クリア
+  document.getElementById('chat-messages').innerHTML = '';
 
-  document.getElementById('chat-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      document.getElementById('send-btn').click();
-    }
-  });
+  showPanel('chat-container');
 
-  // テキストエリア自動リサイズ
-  document.getElementById('chat-input').addEventListener('input', function () {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-  });
-
-  // ゲーム開始をAIに依頼
   await sendMessage('ゲームを始めてください', true);
 }
 
-// ── メッセージ送信 ──
+/** メッセージ送信 */
 async function sendMessage(text, isHidden = false) {
   if (!isHidden) {
     renderMessage('user', text);
@@ -619,7 +724,6 @@ async function sendMessage(text, isHidden = false) {
     gameState.turnCount++;
     updateProgress();
   } else {
-    // 非表示送信（ゲーム開始など）
     gameState.messages.push({ role: 'user', content: text });
   }
 
@@ -651,22 +755,23 @@ async function sendMessage(text, isHidden = false) {
     const reply = data.content || data.message || '';
 
     loadingEl.remove();
-    const msgEl = renderMessage('ai', reply);
+    renderMessage('ai', reply);
     gameState.messages.push({ role: 'assistant', content: reply });
 
-    // 選択肢を検出して表示
     const choices = parseChoices(reply);
     if (choices.length > 0) {
       renderChoices(choices);
     }
   } catch (err) {
     loadingEl.remove();
-    console.error('[sendMessage] エラー:', err);
-    renderMessage('ai', '⚠️ 通信エラーが発生しました。もう一度お試しください。');
+    ErrorHandler.log('sendMessage', err);
+    const { userMessage } = ErrorHandler.handleAPIError(err);
+    ErrorHandler.showErrorToast(userMessage);
+    renderMessage('ai', '⚠️ ' + userMessage);
   }
 }
 
-// ── メッセージDOM生成 ──
+/** メッセージDOM生成 */
 function renderMessage(role, content, isLoading = false) {
   const messagesEl = document.getElementById('chat-messages');
   if (!messagesEl) return null;
@@ -685,7 +790,7 @@ function renderMessage(role, content, isLoading = false) {
   return div;
 }
 
-// ── 選択肢テキスト解析 ──
+/** A/B/C 選択肢を解析 */
 function parseChoices(text) {
   const choices = [];
   const lines = text.split('\n');
@@ -696,7 +801,7 @@ function parseChoices(text) {
   return choices;
 }
 
-// ── 選択肢ボタン生成 ──
+/** 選択肢ボタンを生成 */
 function renderChoices(choices) {
   const messagesEl = document.getElementById('chat-messages');
   if (!messagesEl) return;
@@ -719,8 +824,84 @@ function renderChoices(choices) {
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-// ── 進捗更新（星座アイコン連動） ──
+// ══════════════════════════════════════════
+// 進捗・クリア演出
+// ══════════════════════════════════════════
+
+/** 進捗更新（星座アイコン連動・クリア検知） */
 function updateProgress() {
+  const prev = gameState.constellationStars;
   gameState.constellationStars = Math.min(gameState.turnCount, 5);
   ConstellationIcon.updateAllIcons(gameState.constellationStars);
+
+  // 初めて5に達したらクリアシーケンス開始
+  if (gameState.constellationStars === 5 && prev < 5 && !gameState.cleared) {
+    gameState.cleared = true;
+    setTimeout(() => triggerClearSequence(), 1500);
+  }
+}
+
+/** クリアシーケンス: フィードバック → クリア演出 */
+async function triggerClearSequence() {
+  await ChainedFeedback.chainedFeedback(gameState.selectedSage, gameState.messages);
+  showClearScreen();
+}
+
+/** クリア演出: 星座最大輝度 + 完成テキスト + 流れ星 → 結果カード */
+async function showClearScreen() {
+  ConstellationIcon.updateAllIcons(5);
+
+  // 完成テキストをチャットに表示
+  await new Promise(r => setTimeout(r, 400));
+  renderMessage('ai', '✨ 思考の星座、完成！✨');
+
+  // 流れ星アニメーション（3本、1秒間隔）
+  triggerShootingStars();
+
+  // 1.5秒後に結果カードへ
+  await new Promise(r => setTimeout(r, 2000));
+  showResultCard();
+}
+
+/** 流れ星: 3本の線が画面を横切る */
+function triggerShootingStars() {
+  [0, 1000, 2000].forEach((delay, i) => {
+    setTimeout(() => {
+      const star = document.createElement('div');
+      star.className = 'rc-shooting-star';
+      star.style.top = `${15 + i * 18}%`;
+      document.body.appendChild(star);
+      setTimeout(() => star.remove(), 900);
+    }, delay);
+  });
+}
+
+/** 結果カードを表示 */
+async function showResultCard() {
+  const profile = await SageProfileLoader.getMergedProfile(gameState.selectedSage);
+  const now = new Date().toLocaleString('ja-JP');
+
+  const panel = document.getElementById('result-card');
+  panel.innerHTML = `
+    <div class="rc-card rpg-window">
+      <div class="rc-constellation">
+        ${ConstellationIcon.createHTML(5, true)}
+      </div>
+      <h2 class="rc-title">🌌 今日の星座記録</h2>
+      <div class="rc-info">
+        <div class="rc-row"><span class="rc-label">偉人</span><span class="rc-value">${profile?.name || '—'} ${profile?.icon || ''}</span></div>
+        <div class="rc-row"><span class="rc-label">問題タイプ</span><span class="rc-value">型${gameState.problemType}</span></div>
+        <div class="rc-row"><span class="rc-label">対話回数</span><span class="rc-value">${gameState.turnCount} 回</span></div>
+        <div class="rc-row"><span class="rc-label">達成日時</span><span class="rc-value">${now}</span></div>
+      </div>
+      <button class="rc-replay-btn" id="rc-replay">もう一度遊ぶ</button>
+    </div>
+  `;
+
+  showPanel('result-card');
+
+  // コレクションに保存
+  SageCollection.saveResult(gameState.selectedSage, gameState.problemType, gameState.turnCount);
+
+  document.getElementById('rc-replay').addEventListener('click', goHome);
 }

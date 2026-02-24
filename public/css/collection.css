@@ -1,0 +1,96 @@
+/* ============================================================
+   collection.css — 偉人コレクション図鑑
+   AI冒険の書
+   クラス名プレフィックス: sc- (sage collection)
+   ============================================================ */
+
+/* ── 図鑑画面全体 ── */
+.sc-collection-screen {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 24px 16px 120px;
+}
+
+.sc-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.sc-title {
+  font-family: 'Pixelify Sans', cursive;
+  font-size: 1.5rem;
+  color: var(--gold-primary);
+  margin-bottom: 6px;
+}
+
+.sc-subtitle {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* ── 図鑑グリッド ── */
+.sc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+}
+
+/* ── 偉人カード（解放済み） ── */
+.sc-card {
+  border-radius: 8px;
+  padding: 16px 10px;
+  text-align: center;
+  position: relative;
+}
+
+.sc-card--cleared {
+  background: var(--bg-card);
+  border: 2px solid var(--border-gold);
+}
+
+.sc-card--cleared::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--border-gold), transparent);
+}
+
+.sc-card-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.sc-card-name {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.sc-card-date {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.65rem;
+  color: var(--gold-dim);
+  margin-top: 4px;
+}
+
+/* ── 偉人カード（未解放） ── */
+.sc-card--locked {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-rpg);
+  opacity: 0.6;
+}
+
+.sc-card-icon--locked {
+  font-size: 1.5rem;
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+.sc-card-name--locked {
+  color: var(--text-muted);
+}
