@@ -4,6 +4,7 @@
  */
 
 const GAME_CONFIG = {
+  // モード識別子（URLパラメータ値と一致）
   MODES: {
     EXHIBITION: 'exhibition',
     FULL: 'full',
@@ -11,15 +12,16 @@ const GAME_CONFIG = {
 
   // 展示会モード設定
   EXHIBITION: {
-    maxSages: 5,
-    sessionMinutes: { min: 3, max: 5 },
+    sageCount: 5,
+    timeLimit: 300, // 秒（5分）
     label: '展示会モード',
+    sages: ['jobs', 'socrates', 'nietzsche', 'ichiro', 'miyazaki'],
   },
 
   // 標準モード設定
   FULL: {
-    maxSages: 13,
-    sessionMinutes: null, // 時間制限なし
+    sageCount: 13,
+    timeLimit: null,
     label: '標準モード',
   },
 
@@ -30,5 +32,12 @@ const GAME_CONFIG = {
     max_tokens: 1000,
     presence_penalty: 0.3,
     frequency_penalty: 0.3,
+  },
+
+  // URLパラメータからモードを取得
+  getMode() {
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode');
+    return mode === this.MODES.EXHIBITION ? this.MODES.EXHIBITION : this.MODES.FULL;
   },
 };

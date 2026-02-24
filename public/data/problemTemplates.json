@@ -1,4 +1,88 @@
 {
-  "_comment": "問題テンプレート（7型×各5パターン）— Phase 0-B 以降に実装予定",
-  "templates": {}
+  "templates": {
+    "type1": {
+      "name": "ユーモア系ビジネス思考",
+      "format": "[character]が[success]より[goal]するには？",
+      "sages": ["jobs", "ichiro", "miyazaki"],
+      "patterns": [
+        { "character": "パンダ", "success": "ヒカキン", "goal": "人気になる" },
+        { "character": "ナマケモノ", "success": "イーロン・マスク", "goal": "お金持ちになる" },
+        { "character": "コアラ", "success": "ビル・ゲイツ", "goal": "世界を変える" },
+        { "character": "ペンギン", "success": "マーク・ザッカーバーグ", "goal": "世界中に友達を作る" },
+        { "character": "フクロウ", "success": "スティーブ・ジョブズ", "goal": "最高の商品を作る" }
+      ]
+    },
+    "type2": {
+      "name": "価値観系",
+      "format": "絶対に[state]になれる能力とは？",
+      "sages": ["aristotle", "buddha", "kant"],
+      "patterns": [
+        { "state": "友達に好かれる" },
+        { "state": "テストで100点を取れる" },
+        { "state": "夢が必ず叶う" },
+        { "state": "誰にも怒られない" },
+        { "state": "毎日楽しい" }
+      ]
+    },
+    "type3": {
+      "name": "パラドックス系（努力・挑戦）",
+      "format": "[guarantee]世界で、[action]の意味は？",
+      "sages": ["nietzsche", "ichiro", "einstein"],
+      "patterns": [
+        { "guarantee": "ゲームで絶対に勝てる", "action": "対戦する" },
+        { "guarantee": "テストで必ず100点取れる", "action": "勉強する" },
+        { "guarantee": "努力が必ず報われる", "action": "努力する" },
+        { "guarantee": "失敗しない", "action": "挑戦する" },
+        { "guarantee": "練習すれば必ずプロになれる", "action": "練習する" }
+      ]
+    },
+    "type4": {
+      "name": "発想転換系",
+      "format": "もし[change]、[concept]はどこに現れる？",
+      "sages": ["socrates", "chanel", "einstein"],
+      "patterns": [
+        { "change": "スマホが消えた", "concept": "友達との遊び方" },
+        { "change": "全員同じ顔になった", "concept": "自分らしさ" },
+        { "change": "全員同じ声になった", "concept": "アイデンティティ" },
+        { "change": "お金がなくなった", "concept": "価値" },
+        { "change": "全員同じ服になった", "concept": "個性" }
+      ]
+    },
+    "type5": {
+      "name": "未来思考系",
+      "format": "[tech]が人間の[multiplier]倍の世界で、人間が勝てることは？",
+      "sages": ["jobs", "turing", "miyazaki"],
+      "patterns": [
+        { "tech": "AI", "multiplier": "100" },
+        { "tech": "ロボット", "multiplier": "1000" },
+        { "tech": "コンピュータ", "multiplier": "100万" },
+        { "tech": "AI", "multiplier": "10" },
+        { "tech": "機械", "multiplier": "500" }
+      ]
+    },
+    "type6": {
+      "name": "パラドックス系（倫理）",
+      "format": "すべての人が[constraint]世界で、「[concept]」はどう変わる？",
+      "sages": ["kant", "confucius", "teresa"],
+      "patterns": [
+        { "constraint": "嘘をつけない", "concept": "優しさ" },
+        { "constraint": "本音しか言えない", "concept": "信頼" },
+        { "constraint": "親切にしなければならない", "concept": "感謝" },
+        { "constraint": "怒れない", "concept": "正義" },
+        { "constraint": "謝れない", "concept": "仲直り" }
+      ]
+    },
+    "type7": {
+      "name": "ユーモア系（説明の難しさ）",
+      "format": "[extreme]の[character]に、[value]を伝えるには？",
+      "sages": ["einstein", "miyazaki", "jobs"],
+      "patterns": [
+        { "extreme": "スマホ依存", "character": "宇宙人", "value": "自然の良さ" },
+        { "extreme": "デジタルネイティブ", "character": "宇宙人", "value": "アナログの良さ" },
+        { "extreme": "ゲームしか知らない", "character": "ロボット", "value": "友達の大切さ" },
+        { "extreme": "働きすぎ", "character": "人工知能", "value": "休むことの大切さ" },
+        { "extreme": "速さだけを追求する", "character": "未来人", "value": "ゆっくり楽しむこと" }
+      ]
+    }
+  }
 }
