@@ -538,9 +538,19 @@ function showSageSelection(sages) {
     </div>
   `;
 
+  // 演出: 登場アニメーション
+  Onboarding.animateSageCards(app);
+
+  // 展示会モード: チュートリアル Tip を表示
+  if (gameState.mode === GAME_CONFIG.MODES.EXHIBITION) {
+    Onboarding.showExhibitionTip(app.querySelector('.sage-selection-header'));
+  }
+
+  // カードクリック: 選択演出 → チャット開始
   app.querySelectorAll('.sage-card').forEach(card => {
     card.addEventListener('click', () => {
-      startChat(card.dataset.sageId);
+      const sageId = card.dataset.sageId;
+      Onboarding.selectCard(card, () => startChat(sageId));
     });
   });
 }
@@ -712,7 +722,5 @@ function renderChoices(choices) {
 // ── 進捗更新（星座アイコン連動） ──
 function updateProgress() {
   gameState.constellationStars = Math.min(gameState.turnCount, 5);
-  if (typeof ConstellationIcon !== 'undefined' && ConstellationIcon.update) {
-    ConstellationIcon.update(gameState.constellationStars);
-  }
+  ConstellationIcon.updateAllIcons(gameState.constellationStars);
 }
