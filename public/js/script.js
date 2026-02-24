@@ -752,7 +752,7 @@ async function sendMessage(text, isHidden = false) {
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    const reply = data.content || data.message || '';
+    const reply = data.choices?.[0]?.message?.content || '';
 
     loadingEl.remove();
     renderMessage('ai', reply);

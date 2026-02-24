@@ -66,10 +66,14 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'サーバー設定エラーが発生しました' });
   }
 
-  const { messages } = req.body || {};
+  const { messages, systemPrompt } = req.body || {};
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'messages フィールドが必要です' });
   }
+
+  const fullMessages = systemPrompt
+    ? [{ role: 'system', content: systemPrompt }, ...messages]
+    : messages;
 
   try {
     const openaiRes = await fetchWithRetry(OPENAI_API_URL, {
@@ -80,7 +84,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         ...API_CONFIG,
-        messages,
+        messages: fullMessages,
       }),
     });
 
