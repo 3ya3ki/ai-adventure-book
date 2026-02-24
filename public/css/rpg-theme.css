@@ -1,0 +1,130 @@
+/* ============================================================
+   rpg-theme.css — RPGテーマ（フォント・配色・UI枠）
+   AI冒険の書
+   ============================================================ */
+
+/* ── CSS変数（カラーパレット） ── */
+:root {
+  /* 背景 */
+  --bg-primary:       #0a0e1a;
+  --bg-secondary:     #111827;
+  --bg-card:          #1a2236;
+  --bg-card-hover:    #1e2940;
+
+  /* ボーダー */
+  --border-rpg:       #2a3a5c;
+  --border-gold:      #c8a24e;
+
+  /* ゴールド */
+  --gold-primary:     #d4a843;
+  --gold-light:       #f0d48a;
+  --gold-dim:         #8a7033;
+
+  /* テキスト */
+  --text-primary:     #e8e0d0;
+  --text-secondary:   #9ca3af;
+  --text-muted:       #6b7280;
+
+  /* アクセント */
+  --accent-blue:      #4a7cc9;
+  --accent-cyan:      #38bdf8;
+
+  /* ステータス */
+  --danger:           #ef4444;
+  --success:          #22c55e;
+
+  /* フォント */
+  --font-pixel:       'Pixelify Sans', cursive;
+  --font-body:        'Noto Sans JP', sans-serif;
+}
+
+/* ── body 基本スタイル ── */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ── RPGウィンドウ枠 ── */
+.rpg-window {
+  position: relative;
+  background: var(--bg-card);
+  border: 2px solid var(--border-rpg);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rpg-window::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--border-gold), transparent);
+  pointer-events: none;
+}
+
+/* ── RPGスタイルボタン ── */
+.btn-rpg {
+  font-family: var(--font-pixel);
+  background: var(--bg-card);
+  color: var(--gold-light);
+  border: 1px solid var(--border-gold);
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.btn-rpg:hover {
+  background: var(--bg-card-hover);
+  box-shadow: 0 0 8px var(--gold-dim);
+}
+
+.btn-rpg:active {
+  box-shadow: none;
+  transform: translateY(1px);
+}
+
+.btn-rpg-primary {
+  background: linear-gradient(135deg, var(--gold-dim), var(--gold-primary));
+  color: var(--bg-primary);
+  border-color: var(--gold-light);
+  font-weight: 600;
+}
+
+.btn-rpg-primary:hover {
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-light));
+  box-shadow: 0 0 12px var(--gold-primary);
+}
+
+/* ── ユーティリティクラス ── */
+.text-gold        { color: var(--gold-primary); }
+.text-gold-light  { color: var(--gold-light); }
+.text-gold-dim    { color: var(--gold-dim); }
+.text-muted       { color: var(--text-muted); }
+.text-secondary   { color: var(--text-secondary); }
+.text-accent-blue { color: var(--accent-blue); }
+.text-accent-cyan { color: var(--accent-cyan); }
+.text-success     { color: var(--success); }
+.text-danger      { color: var(--danger); }
+
+.font-pixel       { font-family: var(--font-pixel); }
+.font-body        { font-family: var(--font-body); }
+
+.bg-card          { background-color: var(--bg-card); }
+.bg-secondary-rpg { background-color: var(--bg-secondary); }
+
+.border-rpg       { border-color: var(--border-rpg); }
+.border-gold      { border-color: var(--border-gold); }
+
+/* ── コンテンツ最大幅（768px 中央寄せ） ── */
+.content-container {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}

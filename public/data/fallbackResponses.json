@@ -1,0 +1,4 @@
+{
+  "_comment": "オフライン用応答（fetch CORSエラー時のフォールバック）— Phase 0-B 以降に実装予定",
+  "responses": []
+}
