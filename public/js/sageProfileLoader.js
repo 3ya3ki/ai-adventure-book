@@ -8,13 +8,21 @@ const SageProfileLoader = (() => {
   let coreCache = null;
   let extendedCache = null;
 
-  // fetchエラー時のフォールバック（展示会5名のみ）
+  // fetchエラー時のフォールバック（sages-core.json と完全一致・13名全員）
   const FALLBACK_CORE = [
-    { id: 'jobs',     name: 'スティーブ・ジョブズ', nameEn: 'Steve Jobs',    icon: '💡', shortDesc: 'Appleを創り、世界を変えたイノベーター', era: '20世紀', field: 'テクノロジー・デザイン' },
-    { id: 'socrates', name: 'ソクラテス',           nameEn: 'Socrates',      icon: '🏛', shortDesc: '「無知の知」を説いた古代の哲学者',    era: '古代ギリシャ',  field: '哲学・倫理学' },
-    { id: 'nietzsche',name: 'ニーチェ',             nameEn: 'Nietzsche',     icon: '⚡', shortDesc: '常識を疑い、超人思想を説いた哲学者',  era: '19世紀',        field: '哲学・文学' },
-    { id: 'ichiro',   name: 'イチロー',             nameEn: 'Ichiro',        icon: '⚾', shortDesc: '継続と準備で世界一になったプロ野球選手', era: '現代',        field: 'スポーツ・自己鍛錬' },
-    { id: 'miyazaki', name: '宮崎駿',               nameEn: 'Hayao Miyazaki',icon: '🎬', shortDesc: '自然と人間の物語を描き続けるアニメの巨匠', era: '現代',      field: 'アニメ・映画' },
+    { id: 'socrates',  name: 'ソクラテス',           nameEn: 'Socrates',           icon: '🏛',  shortDesc: '「無知の知」を説いた古代の哲学者',             era: '古代ギリシャ（前470〜前399年）', field: '哲学・倫理学'       },
+    { id: 'aristotle', name: 'アリストテレス',        nameEn: 'Aristotle',          icon: '📚',  shortDesc: '論理学・倫理学・政治学を体系化した万学の祖',   era: '古代ギリシャ（前384〜前322年）', field: '哲学・科学・論理学' },
+    { id: 'nietzsche', name: 'ニーチェ',              nameEn: 'Friedrich Nietzsche', icon: '⚡',  shortDesc: '常識を疑い、超人思想を説いた哲学者',           era: '19世紀（1844〜1900年）',         field: '哲学・文学'         },
+    { id: 'buddha',    name: 'ブッダ',                nameEn: 'Gautama Buddha',     icon: '🪷',  shortDesc: '苦しみからの解放と悟りを説いた仏教の開祖',     era: '古代インド（前563〜前483年）',   field: '宗教・哲学・瞑想'   },
+    { id: 'kant',      name: 'カント',                nameEn: 'Immanuel Kant',      icon: '⚖️', shortDesc: '道徳の普遍的な原則を探求した哲学者',           era: '18世紀（1724〜1804年）',         field: '哲学・倫理学'       },
+    { id: 'confucius', name: '孔子',                  nameEn: 'Confucius',          icon: '🎋',  shortDesc: '仁・礼・徳を説いた儒教の祖',                  era: '古代中国（前551〜前479年）',     field: '哲学・教育・倫理'   },
+    { id: 'jobs',      name: 'スティーブ・ジョブズ',  nameEn: 'Steve Jobs',         icon: '💡',  shortDesc: 'Appleを創り、世界を変えたイノベーター',        era: '20〜21世紀（1955〜2011年）',     field: 'テクノロジー・デザイン' },
+    { id: 'einstein',  name: 'アインシュタイン',      nameEn: 'Albert Einstein',    icon: '🌌',  shortDesc: '相対性理論で物理学を革命した天才科学者',       era: '20世紀（1879〜1955年）',         field: '物理学・思想'       },
+    { id: 'chanel',    name: 'ココ・シャネル',        nameEn: 'Coco Chanel',        icon: '👗',  shortDesc: '女性を解放したファッションの革命家',           era: '20世紀（1883〜1971年）',         field: 'ファッション・デザイン' },
+    { id: 'miyazaki',  name: '宮崎駿',                nameEn: 'Hayao Miyazaki',     icon: '🎬',  shortDesc: '自然と人間の物語を描き続けるアニメの巨匠',     era: '現代（1941年〜）',               field: 'アニメ・映画'       },
+    { id: 'ichiro',    name: 'イチロー',              nameEn: 'Ichiro Suzuki',      icon: '⚾',  shortDesc: '継続と準備で世界一になったプロ野球選手',       era: '現代（1973年〜）',               field: 'スポーツ・自己鍛錬' },
+    { id: 'teresa',    name: 'マザー・テレサ',        nameEn: 'Mother Teresa',      icon: '🕊️', shortDesc: '最も貧しい人々に愛と献身を捧げた聖人',        era: '20世紀（1910〜1997年）',         field: '人道支援・宗教'     },
+    { id: 'turing',    name: 'アラン・チューリング',  nameEn: 'Alan Turing',        icon: '💻',  shortDesc: 'コンピュータ科学とAIの父',                    era: '20世紀（1912〜1954年）',         field: '数学・計算機科学'   },
   ];
 
   async function loadCore() {
