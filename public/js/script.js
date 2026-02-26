@@ -865,33 +865,48 @@ async function triggerClearSequence() {
   showClearScreen();
 }
 
-/** クリア演出: 星座最大輝度 + 完成テキスト + 流れ星 → 結果カード */
+/** クリア演出: 星座glow + 完成テキスト + 流れ星 → 結果カードフェードイン */
 async function showClearScreen() {
   ConstellationIcon.updateAllIcons(5);
 
-  // 完成テキストをチャットに表示
+  // 星座アイコンにゴールドglow付与
+  document.querySelectorAll('.cs-icon').forEach(el => {
+    el.classList.add('constellation-clear-glow');
+  });
+
+  // 完成テキストをチャットに表示（400ms後）
   await new Promise(r => setTimeout(r, 400));
   renderMessage('ai', '✨ 思考の星座、完成！✨');
 
-  // 流れ星アニメーション（3本、1秒間隔）
+  // 流れ星（5〜8本、100ms間隔）
   triggerShootingStars();
 
-  // 1.5秒後に結果カードへ
-  await new Promise(r => setTimeout(r, 2000));
+  // 演出完了まで待機（最大8本×100ms発射 + 900msアニメ + バッファ600ms = 2300ms）
+  await new Promise(r => setTimeout(r, 2300));
+
+  // glow解除
+  document.querySelectorAll('.cs-icon').forEach(el => {
+    el.classList.remove('constellation-clear-glow');
+  });
+
+  // 結果カードをフェードイン表示
   showResultCard();
 }
 
-/** 流れ星: 3本の線が画面を横切る */
+/** 流れ星: 5〜8本、ゴールド、ランダム位置・サイズで斜め横断（100ms間隔） */
 function triggerShootingStars() {
-  [0, 1000, 2000].forEach((delay, i) => {
+  const count = Math.floor(Math.random() * 4) + 5; // 5〜8本
+  for (let i = 0; i < count; i++) {
     setTimeout(() => {
       const star = document.createElement('div');
       star.className = 'rc-shooting-star';
-      star.style.top = `${15 + i * 18}%`;
+      star.style.top = `${5 + Math.random() * 55}%`;
+      star.style.width = `${60 + Math.floor(Math.random() * 61)}px`;
+      star.style.height = `${2 + Math.floor(Math.random() * 3)}px`;
       document.body.appendChild(star);
-      setTimeout(() => star.remove(), 900);
-    }, delay);
-  });
+      setTimeout(() => star.remove(), 1000);
+    }, i * 100);
+  }
 }
 
 /** 結果カードを表示 */
