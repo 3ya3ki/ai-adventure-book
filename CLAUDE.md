@@ -84,7 +84,9 @@ ai-adventure-book/
 │   ├── css/
 │   │   ├── rpg-theme.css          # RPGテーマ（フォント・配色・UI枠）
 │   │   ├── chat-ui.css            # チャットUI
-│   │   └── constellation.css      # 星座アイコン
+│   │   ├── constellation.css      # 星座アイコン
+│   │   ├── collection.css         # 偉人図鑑
+│   │   └── portal.css             # ポータル画面（Phase 1追加）
 │   ├── js/
 │   │   ├── gameConfig.js          # モード設定（EXHIBITION/FULL）
 │   │   ├── modeManager.js         # モード管理
@@ -93,6 +95,8 @@ ai-adventure-book/
 │   │   ├── sageProfileLoader.js   # 偉人プロフィール読み込み
 │   │   ├── chainedFeedback.js     # チェーンフィードバック
 │   │   ├── errorHandler.js        # エラーハンドリング
+│   │   ├── sageCollection.js      # 偉人図鑑ロジック
+│   │   ├── portal.js              # ポータル画面ロジック（Phase 1追加）
 │   │   └── script.js              # メインスクリプト（SYSTEM_PROMPT含む）
 │   └── data/
 │       ├── sages-core.json        # 偉人コア設定（選択画面用）
@@ -105,6 +109,19 @@ ai-adventure-book/
 ├── package.json
 └── vercel.json
 ```
+
+## Phase 1 追加ファイル
+- `public/css/portal.css` — ポータル画面CSS（`portal-` プレフィックス統一）
+- `public/js/portal.js` — ポータル画面ロジック（`Portal` モジュール）
+
+## Phase 1 ルール
+- ポータル画面のCSSクラスは全て `portal-` プレフィックス
+- `Portal.navigateToPortal()` / `Portal.navigateToGame()` で画面遷移
+- `goHome()` はポータルが有効なら `ModeManager.stopTimer()` → `Portal.navigateToPortal()` を呼ぶ
+- LocalStorageキー: `portal_adventure_record`（偉人ゲームのキーとは別管理）
+- `screen-portal` / `screen-game` の2画面構造。`.screen.visible` で表示切替
+- `startGameFromPortal(mode)` がポータル→ゲームの起動エントリポイント
+- `Portal.markGameCleared(gameId)` はPhase 2以降で呼び出し元を接続する
 
 ## API設定
 ```javascript

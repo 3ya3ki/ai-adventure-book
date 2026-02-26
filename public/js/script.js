@@ -501,6 +501,11 @@ const gameState = {
 
 // ── DOMContentLoaded ──
 document.addEventListener('DOMContentLoaded', () => {
+  // ポータルモード: portal.jsに制御を委譲
+  if (typeof Portal !== 'undefined' && Portal.isEnabled()) {
+    console.log('[script.js] ポータルモード: portal.jsに委譲');
+    return;
+  }
   gameState.mode = ModeManager.getMode();
   console.log(`[script.js] 起動モード: ${gameState.mode}`);
   initApp();
@@ -520,6 +525,13 @@ async function initApp() {
     });
     return;
   }
+  await startGame();
+}
+
+/** ポータルからのゲーム起動エントリポイント */
+async function startGameFromPortal(mode) {
+  gameState.mode = mode;
+  console.log(`[script.js] ポータルから起動: mode=${mode}`);
   await startGame();
 }
 
@@ -549,6 +561,12 @@ function handleTimerEnd() {
 
 /** ホームへ戻る（偉人選択画面に戻す） */
 function goHome() {
+  // ポータルが有効ならポータルに戻る
+  if (typeof Portal !== 'undefined' && Portal.isEnabled()) {
+    ModeManager.stopTimer();
+    Portal.navigateToPortal();
+    return;
+  }
   initApp();
 }
 

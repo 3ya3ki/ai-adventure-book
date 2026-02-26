@@ -18,12 +18,23 @@
   <link rel="stylesheet" href="css/chat-ui.css" />
   <link rel="stylesheet" href="css/constellation.css" />
   <link rel="stylesheet" href="css/collection.css" />
+  <link rel="stylesheet" href="css/portal.css" />
 </head>
 <body>
-  <div id="app" class="min-h-screen">
-    <!-- アプリケーションのルートコンテナ -->
-    <!-- onboarding.js がスプラッシュ画面を注入 -->
-    <!-- script.js がメインゲームUIを構築 -->
+  <!-- Phase 1: ポータル画面 -->
+  <div id="screen-portal" class="screen">
+    <!-- portal.js が動的に構築 -->
+  </div>
+
+  <!-- ゲーム画面（既存の #app をラップ） -->
+  <div id="screen-game" class="screen">
+    <button id="back-to-portal" class="back-btn">
+      <span class="back-btn-arrow">←</span>
+      <span>ポータルに戻る</span>
+    </button>
+    <div id="app" class="min-h-screen">
+      <!-- 既存のscript.js/onboarding.jsがここを操作 -->
+    </div>
   </div>
 
   <!-- Project JS (defer) -->
@@ -35,6 +46,7 @@
   <script src="js/chainedFeedback.js" defer></script>
   <script src="js/sageCollection.js" defer></script>
   <script src="js/onboarding.js" defer></script>
+  <script src="js/portal.js" defer></script>
   <script src="js/script.js" defer></script>
 </body>
 </html>
