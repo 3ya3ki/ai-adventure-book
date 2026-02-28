@@ -609,9 +609,6 @@ function buildAppShell() {
       </div>
     </div>
 
-    <!-- Panel: 結果カード -->
-    <div id="result-card" class="panel" style="display:none"></div>
-
     <!-- Panel: 偉人図鑑 -->
     <div id="sage-collection" class="panel" style="display:none"></div>
   `;
@@ -865,76 +862,23 @@ async function triggerClearSequence() {
   showClearScreen();
 }
 
-/** クリア演出: 星座glow + 完成テキスト + 流れ星 → 結果カードフェードイン */
+/** クリア演出: ResultCard v1.4 を起動 */
 async function showClearScreen() {
-  ConstellationIcon.updateAllIcons(5);
-
-  // 星座アイコンにゴールドglow付与
-  document.querySelectorAll('.cs-icon').forEach(el => {
-    el.classList.add('constellation-clear-glow');
-  });
-
-  // 完成テキストをチャットに表示（400ms後）
-  await new Promise(r => setTimeout(r, 400));
-  renderMessage('ai', '✨ 思考の星座、完成！✨');
-
-  // 流れ星（5〜8本、100ms間隔）
-  triggerShootingStars();
-
-  // 演出完了まで待機（最大8本×100ms発射 + 900msアニメ + バッファ600ms = 2300ms）
-  await new Promise(r => setTimeout(r, 2300));
-
-  // glow解除
-  document.querySelectorAll('.cs-icon').forEach(el => {
-    el.classList.remove('constellation-clear-glow');
-  });
-
-  // 結果カードをフェードイン表示
-  showResultCard();
-}
-
-/** 流れ星: 5〜8本、ゴールド、ランダム位置・サイズで斜め横断（100ms間隔） */
-function triggerShootingStars() {
-  const count = Math.floor(Math.random() * 4) + 5; // 5〜8本
-  for (let i = 0; i < count; i++) {
-    setTimeout(() => {
-      const star = document.createElement('div');
-      star.className = 'rc-shooting-star';
-      star.style.top = `${5 + Math.random() * 55}%`;
-      star.style.width = `${60 + Math.floor(Math.random() * 61)}px`;
-      star.style.height = `${2 + Math.floor(Math.random() * 3)}px`;
-      document.body.appendChild(star);
-      setTimeout(() => star.remove(), 1000);
-    }, i * 100);
-  }
-}
-
-/** 結果カードを表示 */
-async function showResultCard() {
   const profile = await SageProfileLoader.getMergedProfile(gameState.selectedSage);
-  const now = new Date().toLocaleString('ja-JP');
-
-  const panel = document.getElementById('result-card');
-  panel.innerHTML = `
-    <div class="rc-card rpg-window">
-      <div class="rc-constellation">
-        ${ConstellationIcon.createHTML(5, true)}
-      </div>
-      <h2 class="rc-title">🌌 今日の星座記録</h2>
-      <div class="rc-info">
-        <div class="rc-row"><span class="rc-label">偉人</span><span class="rc-value">${profile?.name || '—'} ${profile?.icon || ''}</span></div>
-        <div class="rc-row"><span class="rc-label">問題タイプ</span><span class="rc-value">型${gameState.problemType}</span></div>
-        <div class="rc-row"><span class="rc-label">対話回数</span><span class="rc-value">${gameState.turnCount} 回</span></div>
-        <div class="rc-row"><span class="rc-label">達成日時</span><span class="rc-value">${now}</span></div>
-      </div>
-      <button class="rc-replay-btn" id="rc-replay">もう一度遊ぶ</button>
-    </div>
-  `;
-
-  showPanel('result-card');
+  const savedProfile = JSON.parse(
+    localStorage.getItem('ai-adventure-profile') ||
+    '{"level":1,"totalExp":0,"gamesCleared":0,"clearedGames":[],"achievements":[]}'
+  );
 
   // コレクションに保存
   SageCollection.saveResult(gameState.selectedSage, gameState.problemType, gameState.turnCount);
 
-  document.getElementById('rc-replay').addEventListener('click', goHome);
+  ResultCard.show({
+    sageName: profile?.name || gameState.selectedSage,
+    sageIcon: profile?.icon || '',
+    questionType: gameState.problemType ? `型${gameState.problemType}` : '—',
+    dialogueCount: gameState.turnCount,
+    currentLevel: savedProfile.level,
+    gamesCleared: savedProfile.gamesCleared
+  });
 }
