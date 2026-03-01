@@ -704,6 +704,150 @@
   }
 }
 
+/* ── 冒険の記録セクション（Phase 1.5） ── */
+.portal-rec-level-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.portal-rec-level-left {
+  flex-shrink: 0;
+}
+
+.portal-rec-label {
+  font-family: var(--font-pixel);
+  font-size: 0.7rem;
+  color: rgba(212, 168, 67, 0.6);
+  letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+
+.portal-rec-lv {
+  font-family: var(--font-pixel);
+  font-size: 2.2rem;
+  color: var(--gold-primary);
+  text-shadow: 0 0 12px rgba(212, 168, 67, 0.4);
+  line-height: 1;
+}
+
+.portal-rec-level-right {
+  flex: 1;
+  text-align: right;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.portal-rec-exp-text {
+  font-family: var(--font-pixel);
+  font-size: 0.9rem;
+  color: var(--gold-primary);
+  margin-bottom: 2px;
+}
+
+.portal-rec-exp-next {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.portal-rec-bar-bg {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.portal-rec-bar-fill {
+  height: 100%;
+  background: linear-gradient(to right, rgba(212, 168, 67, 0.6), var(--gold-light));
+  border-radius: 3px;
+  box-shadow: 0 0 6px rgba(212, 168, 67, 0.4);
+  transition: width 0.8s ease;
+}
+
+.portal-rec-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(200, 162, 78, 0.3), transparent);
+  margin: 4px 0 14px;
+}
+
+.portal-rec-cleared-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.portal-rec-cleared-label {
+  font-family: var(--font-pixel);
+  font-size: 0.7rem;
+  color: rgba(212, 168, 67, 0.6);
+  letter-spacing: 0.1em;
+}
+
+.portal-rec-cleared-count {
+  font-family: var(--font-pixel);
+  font-size: 0.8rem;
+  color: var(--gold-primary);
+}
+
+.portal-rec-games {
+  display: flex;
+  flex-direction: column;
+}
+
+.portal-rec-game-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.portal-rec-game-item:last-child {
+  border-bottom: none;
+}
+
+.portal-rec-game-dot {
+  font-size: 0.5rem;
+  flex-shrink: 0;
+}
+
+.portal-rec-dot-cleared {
+  color: var(--gold-primary);
+}
+
+.portal-rec-dot-pending {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.portal-rec-game-name {
+  flex: 1;
+  font-size: 0.82rem;
+}
+
+.portal-rec-game-name.cleared {
+  color: var(--text-primary);
+}
+
+.portal-rec-game-name.pending {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.portal-rec-game-badge {
+  font-family: var(--font-pixel);
+  font-size: 0.65rem;
+  color: var(--bg-primary);
+  background: var(--gold-primary);
+  padding: 1px 7px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
 /* ── prefers-reduced-motion ── */
 @media (prefers-reduced-motion: reduce) {
   .portal-title,

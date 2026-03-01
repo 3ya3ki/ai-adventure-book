@@ -20,6 +20,14 @@ const Portal = (() => {
     { id: 'book',     icon: '📖', rpgName: '古い本を読む',         realName: 'プロンプト図鑑',               desc: 'AIプロンプトの多様な世界を鑑賞しよう',             time: '2〜4分', tier: 3, enabled: false },
   ];
 
+  const RECORD_GAMES = [
+    { id: 'sage',     icon: '🏰', name: '魔導師に相談する' },
+    { id: 'prompt',   icon: '⚔️', name: 'ダンジョンに潜る' },
+    { id: 'click',    icon: '🏘️', name: '町人の悩みを聞く' },
+    { id: 'tsundere', icon: '💕', name: 'ヒロインに会いに行く' },
+    { id: 'gallery',  icon: '📖', name: '古い本を読む' },
+  ];
+
   let _isTransitioning = false;
   let _record = null; // { level: 0, cleared: {} }
 
@@ -55,6 +63,23 @@ const Portal = (() => {
   function resetRecord() {
     _record = { level: 0, cleared: {} };
     saveRecord();
+  }
+
+  // ── ai-adventure-profile 読み取り ──
+  function readProfile() {
+    let p;
+    try {
+      p = JSON.parse(localStorage.getItem('ai-adventure-profile') || 'null') || {};
+    } catch (e) {
+      p = {};
+    }
+    const level = p.level || 1;
+    const totalExp = p.totalExp || 0;
+    const clearedGames = Array.isArray(p.clearedGames) ? p.clearedGames : [];
+    const expInLevel = totalExp % 100;
+    const barPercent = (totalExp > 0 && expInLevel === 0) ? 100 : expInLevel;
+    const expToNext = 100 - expInLevel;
+    return { level, totalExp, clearedGames, barPercent, expToNext };
   }
 
   // ── ポータルが有効か ──
@@ -135,10 +160,7 @@ const Portal = (() => {
             <span class="profile-header-icon">📊</span>
             <span class="profile-header-title">冒険の記録</span>
           </div>
-          ${buildLevelDisplay()}
-          <div class="profile-games-list">
-            ${GAMES.map(g => buildProfileGameItem(g)).join('')}
-          </div>
+          ${buildAdventureRecord()}
         </div>
       </section>
 
@@ -200,36 +222,44 @@ const Portal = (() => {
     `;
   }
 
-  function buildLevelDisplay() {
-    const level = _record ? _record.level : 0;
-    const pct = (level / 5) * 100;
+  function buildAdventureRecord() {
+    const p = readProfile();
     return `
-      <div class="profile-level">
-        <div>
-          <div class="profile-level-label">冒険者レベル</div>
-          <div>
-            <span class="profile-level-value" id="portalLevelValue">${level}</span>
-            <span class="profile-level-max">/ 5</span>
+      <div class="portal-rec-level-area">
+        <div class="portal-rec-level-left">
+          <div class="portal-rec-label">ADVENTURER</div>
+          <div class="portal-rec-lv" id="portalRecLv">Lv ${p.level}</div>
+        </div>
+        <div class="portal-rec-level-right">
+          <div class="portal-rec-exp-text" id="portalRecExpText">${p.totalExp} EXP</div>
+          <div class="portal-rec-exp-next" id="portalRecExpNext">次のLvまで ${p.expToNext}</div>
+          <div class="portal-rec-bar-bg">
+            <div class="portal-rec-bar-fill" id="portalRecBarFill" style="width: ${p.barPercent}%"></div>
           </div>
         </div>
-        <div class="profile-level-bar">
-          <div class="profile-level-bar-fill" id="portalLevelBar" style="width: ${pct}%"></div>
-        </div>
+      </div>
+      <div class="portal-rec-divider"></div>
+      <div class="portal-rec-cleared-header">
+        <span class="portal-rec-cleared-label">QUEST CLEARED</span>
+        <span class="portal-rec-cleared-count" id="portalRecClearedCount">${p.clearedGames.length} / 5 冒険</span>
+      </div>
+      <div class="portal-rec-games" id="portalRecGames">
+        ${buildRecordGamesHTML(p.clearedGames)}
       </div>
     `;
   }
 
-  function buildProfileGameItem(game) {
-    const isCleared = _record && _record.cleared && _record.cleared[game.id];
-    const statusClass = isCleared ? 'cleared' : 'not-played';
-    const statusText = isCleared ? '✓' : '−';
-    const nameClass = isCleared || game.enabled ? '' : 'disabled';
-    return `
-      <div class="profile-game-item">
-        <div class="profile-game-status ${statusClass}">${statusText}</div>
-        <span class="profile-game-name ${nameClass}">${game.icon} ${game.rpgName}</span>
-      </div>
-    `;
+  function buildRecordGamesHTML(clearedGames) {
+    return RECORD_GAMES.map(g => {
+      const cleared = clearedGames.includes(g.id);
+      return `
+        <div class="portal-rec-game-item">
+          <span class="portal-rec-game-dot ${cleared ? 'portal-rec-dot-cleared' : 'portal-rec-dot-pending'}">●</span>
+          <span class="portal-rec-game-name ${cleared ? 'cleared' : 'pending'}">${g.icon} ${g.name}</span>
+          ${cleared ? '<span class="portal-rec-game-badge">CLEAR</span>' : ''}
+        </div>
+      `;
+    }).join('');
   }
 
   // ── イベントリスナー ──
@@ -366,16 +396,19 @@ const Portal = (() => {
   // ── プロフィール更新 ──
   function refreshProfile() {
     loadRecord();
-    const levelValue = document.getElementById('portalLevelValue');
-    const levelBar = document.getElementById('portalLevelBar');
-    if (levelValue) levelValue.textContent = _record.level;
-    if (levelBar) levelBar.style.width = `${(_record.level / 5) * 100}%`;
-
-    // ゲームリストの状態更新
-    const list = document.querySelector('.profile-games-list');
-    if (list) {
-      list.innerHTML = GAMES.map(g => buildProfileGameItem(g)).join('');
-    }
+    const p = readProfile();
+    const lvEl = document.getElementById('portalRecLv');
+    const expEl = document.getElementById('portalRecExpText');
+    const expNextEl = document.getElementById('portalRecExpNext');
+    const barEl = document.getElementById('portalRecBarFill');
+    const countEl = document.getElementById('portalRecClearedCount');
+    const gamesEl = document.getElementById('portalRecGames');
+    if (lvEl) lvEl.textContent = `Lv ${p.level}`;
+    if (expEl) expEl.textContent = `${p.totalExp} EXP`;
+    if (expNextEl) expNextEl.textContent = `次のLvまで ${p.expToNext}`;
+    if (barEl) barEl.style.width = `${p.barPercent}%`;
+    if (countEl) countEl.textContent = `${p.clearedGames.length} / 5 冒険`;
+    if (gamesEl) gamesEl.innerHTML = buildRecordGamesHTML(p.clearedGames);
   }
 
   // ── リセット ──
@@ -391,6 +424,7 @@ const Portal = (() => {
 
   function executeReset() {
     resetRecord();
+    localStorage.removeItem('ai-adventure-profile');
     refreshProfile();
     hideResetDialog();
     console.log('[Portal] Reset complete');
