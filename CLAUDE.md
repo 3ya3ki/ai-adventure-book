@@ -155,3 +155,15 @@ ai-adventure-book/
 - ローカル（file://）: UI表示のみ確認可能。fetch()はCORSエラーになるためフォールバック必須
 - Vercel: ゲームフルフロー確認はデプロイ後に実施
 - git push → Vercel自動デプロイ → Ctrl+Shift+R（ハードリロード）で確認
+
+## Phase 1.5 追加ファイル・変更（クリア演出 + デザイン統一）
+- `public/js/resultCard.js` — クリア演出v1.4（QUEST CLEAR → EXP → LEVEL UP → 探索記録カード）
+- `public/css/constellation.css` — 星座アイコンのカラーをRPGゴールドに統一（紫→金）
+- `public/index.html` — `<canvas id="pcanvas">` 追加済み、`resultCard.js` 読み込み追加済み
+- `public/js/script.js` — クリアトリガーを `ResultCard.show()` に更新済み
+
+### Phase 1.5 ルール
+- クリア演出のデザインは合格済みArtifact v1.4が契約（contract）。変更禁止
+- 星座アイコンの配色はRPGカラーパレット（gold系）を使用。紫系は使用禁止
+- `ResultCard.show(params)` のインターフェースを変更する場合は script.js 側も同時に更新すること
+- LocalStorage `ai-adventure-profile` のスキーマ: `{level, totalExp, gamesCleared, clearedGames[], achievements[]}`

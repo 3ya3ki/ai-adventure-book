@@ -9,8 +9,8 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #141432, #080816);
-  border: 1px solid rgba(167, 139, 250, 0.25);
+  background: radial-gradient(circle at 35% 35%, #0f1526, #0a0e1a);
+  border: 1px solid rgba(212, 168, 67, 0.2);
   flex-shrink: 0;
   overflow: visible;
 }
@@ -31,7 +31,7 @@
 }
 
 .cs-line {
-  stroke: rgba(167, 139, 250, 0.45);
+  stroke: rgba(212, 168, 67, 0.35);
   stroke-width: 0.8;
   stroke-linecap: round;
   stroke-dasharray: 150;
@@ -44,7 +44,7 @@
 .cs-star {
   position: absolute;
   border-radius: 50%;
-  background: #e0d4ff;
+  background: rgba(212, 168, 67, 0.6);
   transform: translate(-50%, -50%);
   opacity: 0;
   transition: opacity 0.4s ease, box-shadow 0.4s ease, background 0.4s ease;
@@ -75,16 +75,16 @@
 /* ── Phase 1: 星1つ、微かに光る ── */
 [data-phase="1"] .cs-star--1 {
   opacity: 1;
-  background: #c4b5fd;
-  box-shadow: 0 0 3px 1px rgba(167, 139, 250, 0.7);
+  background: #c8a24e;
+  box-shadow: 0 0 3px 1px rgba(212, 168, 67, 0.5);
 }
 
 /* ── Phase 2: 星2つ、線で接続開始 ── */
 [data-phase="2"] .cs-star--1,
 [data-phase="2"] .cs-star--2 {
   opacity: 1;
-  background: #c4b5fd;
-  box-shadow: 0 0 4px 1px rgba(167, 139, 250, 0.7);
+  background: #c8a24e;
+  box-shadow: 0 0 4px 1px rgba(212, 168, 67, 0.6);
 }
 [data-phase="2"] .cs-line--1-2 {
   stroke-dashoffset: 0;
@@ -96,8 +96,8 @@
 [data-phase="3"] .cs-star--2,
 [data-phase="3"] .cs-star--3 {
   opacity: 1;
-  background: #ddd6fe;
-  box-shadow: 0 0 5px 1px rgba(167, 139, 250, 0.75);
+  background: #d4a843;
+  box-shadow: 0 0 5px 1px rgba(212, 168, 67, 0.7);
 }
 [data-phase="3"] .cs-line--1-2,
 [data-phase="3"] .cs-line--2-3 {
@@ -111,8 +111,8 @@
 [data-phase="4"] .cs-star--3,
 [data-phase="4"] .cs-star--4 {
   opacity: 1;
-  background: #ede9fe;
-  box-shadow: 0 0 6px 2px rgba(190, 160, 255, 0.8);
+  background: #f0d48a;
+  box-shadow: 0 0 6px 2px rgba(240, 212, 138, 0.8);
 }
 [data-phase="4"] .cs-line--1-2,
 [data-phase="4"] .cs-line--2-3,
@@ -138,7 +138,7 @@
 [data-phase="5"] .cs-line--5-1 {
   stroke-dashoffset: 0;
   opacity: 1;
-  stroke: rgba(255, 255, 255, 0.55);
+  stroke: rgba(240, 212, 138, 0.6);
 }
 
 /* ── 瞬きアニメーション（4秒周期） ── */
