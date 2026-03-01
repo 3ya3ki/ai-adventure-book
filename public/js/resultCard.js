@@ -235,6 +235,7 @@ const ResultCard = (() => {
 
 #result-wrapper {
   position: fixed; inset: 0; z-index: 200;
+  background: rgba(10,14,26,0.95);
   display: flex; align-items: center; justify-content: center;
   opacity: 0; pointer-events: none;
   transition: opacity .5s ease;
