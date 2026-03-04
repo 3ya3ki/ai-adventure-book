@@ -351,6 +351,21 @@ function getFallbackQuestion(genre) {
   return { ...q, source: 'fallback' };
 }
 
+function normalizeQuestion(data) {
+  if (!data) return data;
+  const statements = (data.statements || data.Statements || []).map((s) => ({
+    id:    s.id    ?? s.Id    ?? s.ID,
+    text:  s.text  ?? s.Text  ?? s.TEXT,
+    isLie: s.isLie ?? s.IsLie ?? s.ISLIE ?? false,
+  }));
+  return {
+    statements,
+    lieExplanation:        data.lieExplanation        || data.LieExplanation        || '',
+    liePattern:            data.liePattern            || data.LiePattern            || '',
+    liePatternDescription: data.liePatternDescription || data.LiePatternDescription || '',
+  };
+}
+
 function validateQuestion(data) {
   if (!data || !Array.isArray(data.statements)) return false;
   const lieCount = data.statements.filter((s) => s.isLie === true).length;
@@ -389,7 +404,7 @@ async function callOpenAI(apiKey, difficulty, genre, questionNumber, previousTop
   const content = data.choices?.[0]?.message?.content;
   if (!content) throw new Error('Empty response from OpenAI');
 
-  return JSON.parse(content);
+  return normalizeQuestion(JSON.parse(content));
 }
 
 // ── メインハンドラー ──
