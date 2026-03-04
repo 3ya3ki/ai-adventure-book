@@ -1,342 +1,558 @@
 /**
- * portal.js — RPGポータル画面管理
- * AI冒険の書 Phase 1
+ * portal.js — 6つのAI体験 ポータル画面管理
+ * Phase 2 全面差し替え
  *
- * 責務:
- * 1. ポータル画面のDOM構築
- * 2. ゲーム選択 → 偉人ゲーム起動の制御
- * 3. 偉人ゲーム → ポータル復帰の制御
- * 4. 成長プロフィール（LocalStorage連携）
- * 5. リセット機能
+ * 公開API（script.js との接続点）:
+ *   Portal.init()
+ *   Portal.isEnabled()
+ *   Portal.navigateToPortal()
+ *   Portal.navigateToGame(gameName)
+ *   Portal.markGameCleared(gameId)
+ *   Portal.refreshProfile()
  */
 const Portal = (() => {
+
   // ── 定数 ──
-  const STORAGE_KEY = 'portal_adventure_record';
+  const PROFILE_KEY = 'ai-experience-profile';
+  const THEME_KEY   = 'theme-preference';
+
   const GAMES = [
-    { id: 'sage',     icon: '🏰', rpgName: '魔導師に相談する',     realName: '偉人とともに考える',           desc: '偉人の知恵を借りて、正解のない問いに挑もう',       time: '5〜7分', tier: 1, enabled: true  },
-    { id: 'dungeon',  icon: '⚔️', rpgName: 'ダンジョンに潜る',     realName: 'プロンプトエンジニアリング学習', desc: 'AIへの効果的な伝え方を学ぼう',                     time: '4〜6分', tier: 2, enabled: false },
-    { id: 'village',  icon: '🏘️', rpgName: '町人の悩みを聞く',     realName: 'クリックAI',                   desc: 'クリックだけでAIと一緒に問題解決',                 time: '3〜5分', tier: 2, enabled: false },
-    { id: 'heroine',  icon: '💕', rpgName: 'ヒロインに会いに行く', realName: 'ツンデレAI',                   desc: 'AIキャラとの自然な対話を楽しもう',                 time: '3〜5分', tier: 3, enabled: false },
-    { id: 'book',     icon: '📖', rpgName: '古い本を読む',         realName: 'プロンプト図鑑',               desc: 'AIプロンプトの多様な世界を鑑賞しよう',             time: '2〜4分', tier: 3, enabled: false },
+    {
+      id:          'ijin',
+      icon:        '🏛️',
+      name:        '偉人とともに考える',
+      catchcopy:   'AIと一緒に深く考える',
+      desc:        '偉人の視点を借りて、正解のない問いに挑戦しよう',
+      enabled:     true,
+      gameName:    'ijin',
+      lightAccent: '#b45309',
+      darkAccent:  '#f59e0b',
+      darkBg:      'linear-gradient(135deg, #451a03, #78350f)',
+      lightBg:     'linear-gradient(135deg, #fef3c7, #fde68a)',
+    },
+    {
+      id:          'uso',
+      icon:        '🎭',
+      name:        'ウソつきAI',
+      catchcopy:   'AIの情報を見抜く',
+      desc:        'AIの嘘を見破れるか？情報リテラシーを試そう',
+      enabled:     false,
+      lightAccent: '#dc2626',
+      darkAccent:  '#f87171',
+      darkBg:      'linear-gradient(135deg, #450a0a, #7f1d1d)',
+      lightBg:     'linear-gradient(135deg, #fecaca, #fca5a5)',
+    },
+    {
+      id:          'prompt',
+      icon:        '🎯',
+      name:        'プロンプト道場',
+      catchcopy:   'AIの使い方を学ぶ',
+      desc:        '効果的なプロンプトの書き方をマスターしよう',
+      enabled:     false,
+      lightAccent: '#0369a1',
+      darkAccent:  '#38bdf8',
+      darkBg:      'linear-gradient(135deg, #0c2d48, #0e3a5e)',
+      lightBg:     'linear-gradient(135deg, #e0f2fe, #bae6fd)',
+    },
+    {
+      id:          'click',
+      icon:        '👆',
+      name:        'クリックAI',
+      catchcopy:   'AIは誰でも使える',
+      desc:        'クリックだけでAIの力を体験してみよう',
+      enabled:     false,
+      lightAccent: '#047857',
+      darkAccent:  '#34d399',
+      darkBg:      'linear-gradient(135deg, #022c22, #064e3b)',
+      lightBg:     'linear-gradient(135deg, #d1fae5, #a7f3d0)',
+    },
+    {
+      id:          'tsundere',
+      icon:        '💕',
+      name:        'ツンデレAI',
+      catchcopy:   'AIキャラと対話する',
+      desc:        '個性豊かなAIキャラクターとの会話を楽しもう',
+      enabled:     false,
+      lightAccent: '#be123c',
+      darkAccent:  '#fb7185',
+      darkBg:      'linear-gradient(135deg, #4c0519, #881337)',
+      lightBg:     'linear-gradient(135deg, #ffe4e6, #fecdd3)',
+    },
+    {
+      id:          'zukan',
+      icon:        '📖',
+      name:        'プロンプト図鑑',
+      catchcopy:   'AIの多様性を鑑賞する',
+      desc:        '様々なプロンプトとAIの応答を鑑賞しよう',
+      enabled:     false,
+      lightAccent: '#6d28d9',
+      darkAccent:  '#a78bfa',
+      darkBg:      'linear-gradient(135deg, #2e1065, #4c1d95)',
+      lightBg:     'linear-gradient(135deg, #ede9fe, #ddd6fe)',
+    },
   ];
 
-  const RECORD_GAMES = [
-    { id: 'sage',     icon: '🏰', name: '魔導師に相談する' },
-    { id: 'prompt',   icon: '⚔️', name: 'ダンジョンに潜る' },
-    { id: 'click',    icon: '🏘️', name: '町人の悩みを聞く' },
-    { id: 'tsundere', icon: '💕', name: 'ヒロインに会いに行く' },
-    { id: 'gallery',  icon: '📖', name: '古い本を読む' },
-  ];
-
+  // ── 状態 ──
   let _isTransitioning = false;
-  let _record = null; // { level: 0, cleared: {} }
+  let _isDark           = true;
 
-  // ── LocalStorage ──
-  function loadRecord() {
-    try {
-      const data = localStorage.getItem(STORAGE_KEY);
-      _record = data ? JSON.parse(data) : { level: 0, cleared: {} };
-    } catch {
-      _record = { level: 0, cleared: {} };
-    }
-    return _record;
+  // ── オーロラCanvas ──
+  let _auroraCanvas = null;
+  let _auroraCtx    = null;
+  let _auroraAnimId = null;
+  let _blobs        = [];
+
+  // ──────────────────────────────────────────────
+  // テーマ
+  // ──────────────────────────────────────────────
+  function loadTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    _isDark = (saved !== 'light');
+    applyTheme();
   }
 
-  function saveRecord() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(_record));
-    } catch (e) {
-      console.warn('[Portal] LocalStorage save failed', e);
-    }
-  }
-
-  /** ゲームクリア時に外部から呼び出される */
-  function markGameCleared(gameId) {
-    if (!_record) loadRecord();
-    if (!_record.cleared[gameId]) {
-      _record.cleared[gameId] = new Date().toISOString();
-      _record.level = Object.keys(_record.cleared).length;
-      saveRecord();
+  function applyTheme() {
+    document.body.classList.toggle('portal-dark',  _isDark);
+    document.body.classList.toggle('portal-light', !_isDark);
+    const btn = document.getElementById('portal-theme-btn');
+    if (btn) btn.textContent = _isDark ? '☀️' : '🌙';
+    if (_isDark) {
+      startAurora();
+    } else {
+      stopAurora();
     }
   }
 
-  function resetRecord() {
-    _record = { level: 0, cleared: {} };
-    saveRecord();
+  function toggleTheme() {
+    _isDark = !_isDark;
+    localStorage.setItem(THEME_KEY, _isDark ? 'dark' : 'light');
+    // カードの背景をテーマに合わせて更新
+    document.querySelectorAll('#screen-portal .portal-game-card[data-game-id]').forEach(card => {
+      const game = GAMES.find(g => g.id === card.dataset.gameId);
+      if (game) card.style.background = _isDark ? game.darkBg : game.lightBg;
+    });
+    applyTheme();
   }
 
-  // ── ai-adventure-profile 読み取り ──
+  // ──────────────────────────────────────────────
+  // オーロラCanvas（ダークモード専用）
+  // ──────────────────────────────────────────────
+  function initAurora() {
+    if (_auroraCanvas) return;
+    _auroraCanvas = document.createElement('canvas');
+    _auroraCanvas.id = 'portal-aurora-canvas';
+    document.body.insertBefore(_auroraCanvas, document.body.firstChild);
+    _auroraCtx = _auroraCanvas.getContext('2d');
+
+    _blobs = [
+      { x: 0.30, y: 0.30, r: 0.35, color: '#8b5cf6', vx:  0.00030, vy:  0.00020, sr: 0, svs: 0.00010 },
+      { x: 0.70, y: 0.60, r: 0.30, color: '#3b82f6', vx: -0.00020, vy:  0.00030, sr: 1, svs: -0.00010 },
+      { x: 0.50, y: 0.80, r: 0.25, color: '#14b8a6', vx:  0.00010, vy: -0.00020, sr: 2, svs: 0.00020 },
+    ];
+
+    resizeAurora();
+    window.addEventListener('resize', resizeAurora);
+  }
+
+  function resizeAurora() {
+    if (!_auroraCanvas) return;
+    _auroraCanvas.width  = window.innerWidth;
+    _auroraCanvas.height = window.innerHeight;
+  }
+
+  function startAurora() {
+    if (!_auroraCanvas) initAurora();
+    _auroraCanvas.style.display = 'block';
+    if (_auroraAnimId) return;
+    animateAurora();
+  }
+
+  function stopAurora() {
+    if (_auroraCanvas) _auroraCanvas.style.display = 'none';
+    if (_auroraAnimId) {
+      cancelAnimationFrame(_auroraAnimId);
+      _auroraAnimId = null;
+    }
+  }
+
+  function animateAurora() {
+    const ctx = _auroraCtx;
+    const w   = _auroraCanvas.width;
+    const h   = _auroraCanvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+
+    _blobs.forEach(b => {
+      b.x  += b.vx;
+      b.y  += b.vy;
+      b.sr += b.svs;
+      if (b.x < 0.1 || b.x > 0.9) b.vx *= -1;
+      if (b.y < 0.1 || b.y > 0.9) b.vy *= -1;
+
+      const cx     = b.x * w;
+      const cy     = b.y * h;
+      const radius = (b.r + Math.sin(b.sr) * 0.05) * Math.max(w, h);
+
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      grad.addColorStop(0, hexToRgba(b.color, 0.3));
+      grad.addColorStop(1, hexToRgba(b.color, 0));
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    _auroraAnimId = requestAnimationFrame(animateAurora);
+  }
+
+  function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  // ──────────────────────────────────────────────
+  // LocalStorage — プロフィール読み取り
+  // ──────────────────────────────────────────────
   function readProfile() {
-    let p;
+    let p = {};
     try {
-      p = JSON.parse(localStorage.getItem('ai-adventure-profile') || 'null') || {};
+      p = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null') || {};
     } catch (e) {
       p = {};
     }
-    const level = p.level || 1;
-    const totalExp = p.totalExp || 0;
+    const rank        = typeof p.rank    === 'number' ? p.rank    : 0;
+    const totalPt     = typeof p.totalPt === 'number' ? p.totalPt : 0;
     const clearedGames = Array.isArray(p.clearedGames) ? p.clearedGames : [];
-    const expInLevel = totalExp % 100;
-    const barPercent = (totalExp > 0 && expInLevel === 0) ? 100 : expInLevel;
-    const expToNext = 100 - expInLevel;
-    return { level, totalExp, clearedGames, barPercent, expToNext };
+    const barPercent  = totalPt % 100;
+    return { rank, totalPt, clearedGames, barPercent };
   }
 
-  // ── ポータルが有効か ──
-  function isEnabled() {
-    return !!document.getElementById('screen-portal');
-  }
-
-  // ── DOM構築 ──
+  // ──────────────────────────────────────────────
+  // DOM構築
+  // ──────────────────────────────────────────────
   function buildPortalScreen() {
-    loadRecord();
     const portalEl = document.getElementById('screen-portal');
     if (!portalEl) return;
 
-    portalEl.innerHTML = buildPortalHTML();
+    portalEl.innerHTML = '';
 
-    setupEventListeners();
+    // テーマ切り替えボタン（portal-screen 内に配置、position:fixed で右上）
+    const themeBtn = document.createElement('button');
+    themeBtn.id        = 'portal-theme-btn';
+    themeBtn.className = 'portal-theme-toggle';
+    themeBtn.setAttribute('aria-label', 'テーマ切り替え');
+    themeBtn.textContent = _isDark ? '☀️' : '🌙';
+    themeBtn.addEventListener('click', toggleTheme);
+    portalEl.appendChild(themeBtn);
 
+    // コンテンツラッパー
+    const content = document.createElement('div');
+    content.className = 'portal-content';
+    content.appendChild(buildHeader());
+    content.appendChild(buildGrid());
+    content.appendChild(buildRecordSection());
+    content.appendChild(buildFooter());
+    portalEl.appendChild(content);
+
+    // リセット確認ダイアログ
+    portalEl.appendChild(buildDialog());
+
+    // 表示
     portalEl.classList.add('visible');
-  }
 
-  function buildPortalHTML() {
-    return `
-      <!-- PortalHeader -->
-      <header class="portal-header">
-        <h1 class="portal-title">⚔️ AI冒険の書 ⚔️</h1>
-        <p class="portal-subtitle">AIとの冒険が、ここから始まる</p>
-        <div class="portal-divider"></div>
-      </header>
-
-      <!-- RecommendedRouteBanner -->
-      <section class="portal-recommend">
-        <div class="recommend-banner" id="recommendBanner">
-          <div class="recommend-banner-header">
-            <span class="recommend-banner-icon">💡</span>
-            <span class="recommend-banner-text">初めての方はこちら</span>
-            <span class="recommend-banner-arrow">▼</span>
-          </div>
-          <div class="recommend-body">
-            <div class="recommend-body-inner">
-              <p class="recommend-description">
-                初めて遊ぶ方におすすめの順番をご案内します。<br>
-                じっくり考えたい方も、サクッと体験したい方も楽しめます。
-              </p>
-              <div class="recommend-route-list">
-                <div class="recommend-route-item">
-                  <span class="recommend-route-number">1</span>
-                  <span>🏰 魔導師に相談する（5〜7分）</span>
-                </div>
-                <div class="recommend-route-item">
-                  <span class="recommend-route-number">2</span>
-                  <span>⚔️ ダンジョンに潜る（準備中）</span>
-                </div>
-                <div class="recommend-route-item">
-                  <span class="recommend-route-number">3</span>
-                  <span>🏘️ 町人の悩みを聞く（準備中）</span>
-                </div>
-              </div>
-              <button class="recommend-start-btn" id="recommendStartBtn">
-                おすすめルートで冒険を始める
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- GameSelectionCards -->
-      <section class="portal-games">
-        <p class="portal-games-title">── 冒険の行き先を選べ ──</p>
-        <div class="portal-games-grid">
-          ${GAMES.map((g, i) => g.enabled ? buildActiveCard(g, i) : buildDisabledCard(g, i)).join('')}
-        </div>
-      </section>
-
-      <!-- GrowthProfilePanel -->
-      <section class="portal-profile">
-        <div class="rpg-window profile-panel">
-          <div class="profile-header">
-            <span class="profile-header-icon">📊</span>
-            <span class="profile-header-title">冒険の記録</span>
-          </div>
-          ${buildAdventureRecord()}
-        </div>
-      </section>
-
-      <!-- ResetButton -->
-      <div class="portal-reset">
-        <button class="reset-btn" id="resetBtn">
-          <span>🔄</span>
-          <span>冒険の記録をリセット</span>
-        </button>
-      </div>
-
-      <!-- ResetDialog -->
-      <div class="dialog-overlay" id="resetDialog">
-        <div class="dialog-box">
-          <div class="dialog-title">⚠️ リセット確認</div>
-          <div class="dialog-message">
-            冒険の記録をすべてリセットします。<br>
-            この操作は取り消せません。
-          </div>
-          <div class="dialog-actions">
-            <button class="dialog-btn dialog-btn-cancel" id="resetCancelBtn">やめる</button>
-            <button class="dialog-btn dialog-btn-confirm" id="resetConfirmBtn">リセットする</button>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  function buildActiveCard(game, index) {
-    return `
-      <div class="game-card stagger-${index + 1}" data-game-id="${game.id}" data-tier="${game.tier}">
-        <div class="game-card-icon">${game.icon}</div>
-        <div class="game-card-rpg-name">${game.rpgName}</div>
-        <div class="game-card-real-name">${game.realName}</div>
-        <div class="game-card-desc">${game.desc}</div>
-        <div class="game-card-meta">
-          <span class="game-card-tier tier-active">★ メイン</span>
-          <span class="game-card-time">⏱ ${game.time}</span>
-        </div>
-      </div>
-    `;
-  }
-
-  function buildDisabledCard(game, index) {
-    return `
-      <div class="game-card-disabled stagger-${index + 1}">
-        <span class="game-card-lock">🔒</span>
-        <span class="tooltip">このゲームは準備中です</span>
-        <div class="game-card-icon">${game.icon}</div>
-        <div class="game-card-rpg-name">${game.rpgName}</div>
-        <div class="game-card-real-name">${game.realName}</div>
-        <div class="game-card-desc">${game.desc}</div>
-        <div class="game-card-meta">
-          <span class="game-card-tier">Tier ${game.tier}</span>
-          <span class="game-card-time">⏱ ${game.time}</span>
-        </div>
-        <div class="game-card-status">― 準備中 ―</div>
-      </div>
-    `;
-  }
-
-  function buildAdventureRecord() {
-    const p = readProfile();
-    return `
-      <div class="portal-rec-level-area">
-        <div class="portal-rec-level-left">
-          <div class="portal-rec-label">ADVENTURER</div>
-          <div class="portal-rec-lv" id="portalRecLv">Lv ${p.level}</div>
-        </div>
-        <div class="portal-rec-level-right">
-          <div class="portal-rec-exp-text" id="portalRecExpText">${p.totalExp} EXP</div>
-          <div class="portal-rec-exp-next" id="portalRecExpNext">次のLvまで ${p.expToNext}</div>
-          <div class="portal-rec-bar-bg">
-            <div class="portal-rec-bar-fill" id="portalRecBarFill" style="width: ${p.barPercent}%"></div>
-          </div>
-        </div>
-      </div>
-      <div class="portal-rec-divider"></div>
-      <div class="portal-rec-cleared-header">
-        <span class="portal-rec-cleared-label">QUEST CLEARED</span>
-        <span class="portal-rec-cleared-count" id="portalRecClearedCount">${p.clearedGames.length} / 5 冒険</span>
-      </div>
-      <div class="portal-rec-games" id="portalRecGames">
-        ${buildRecordGamesHTML(p.clearedGames)}
-      </div>
-    `;
-  }
-
-  function buildRecordGamesHTML(clearedGames) {
-    return RECORD_GAMES.map(g => {
-      const cleared = clearedGames.includes(g.id);
-      return `
-        <div class="portal-rec-game-item">
-          <span class="portal-rec-game-dot ${cleared ? 'portal-rec-dot-cleared' : 'portal-rec-dot-pending'}">●</span>
-          <span class="portal-rec-game-name ${cleared ? 'cleared' : 'pending'}">${g.icon} ${g.name}</span>
-          ${cleared ? '<span class="portal-rec-game-badge">CLEAR</span>' : ''}
-        </div>
-      `;
-    }).join('');
-  }
-
-  // ── イベントリスナー ──
-  function setupEventListeners() {
-    // おすすめルートバナー展開/折りたたみ
-    const banner = document.getElementById('recommendBanner');
-    if (banner) {
-      banner.addEventListener('click', (e) => {
-        // 内部ボタンクリック時は展開トグルしない
-        if (e.target.id === 'recommendStartBtn') return;
-        banner.classList.toggle('expanded');
+    // カードスタガーアニメーション（100ms後に開始）
+    setTimeout(() => {
+      document.querySelectorAll('#screen-portal .portal-game-card').forEach((card, i) => {
+        card.style.animationDelay = `${i * 0.1}s`;
+        card.classList.add('portal-card-animated');
       });
-    }
+    }, 100);
 
-    // おすすめルート開始ボタン
-    const startBtn = document.getElementById('recommendStartBtn');
-    if (startBtn) {
-      startBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        selectGame('sage');
-      });
-    }
+    setupEvents();
+  }
 
-    // ゲーム選択カード
-    document.querySelectorAll('#screen-portal .game-card[data-game-id]').forEach(card => {
-      card.addEventListener('click', () => {
-        selectGame(card.dataset.gameId);
-      });
+  // ── ヘッダー ──
+  function buildHeader() {
+    const header = document.createElement('header');
+    header.className = 'portal-header';
+
+    const subLabel = document.createElement('p');
+    subLabel.className   = 'portal-sub-label';
+    subLabel.textContent = 'FoPs × StudyMeter Inc.';
+    header.appendChild(subLabel);
+
+    // タイトル文字スタガー
+    const title = document.createElement('h1');
+    title.className = 'portal-main-title';
+    [...'6つのAI体験'].forEach((ch, i) => {
+      const span = document.createElement('span');
+      span.className         = 'char';
+      span.style.animationDelay = `${i * 0.05}s`;
+      span.textContent       = ch;
+      title.appendChild(span);
     });
+    header.appendChild(title);
+
+    const tagline = document.createElement('p');
+    tagline.className   = 'portal-tagline';
+    tagline.textContent = 'AIは道具じゃない、パートナーだ。';
+    header.appendChild(tagline);
+
+    const desc = document.createElement('p');
+    desc.className   = 'portal-description';
+    desc.textContent = '6つの体験を通じて、AIの可能性を感じてみよう。';
+    header.appendChild(desc);
+
+    return header;
+  }
+
+  // ── 6カードグリッド ──
+  function buildGrid() {
+    const section = document.createElement('section');
+    section.className = 'portal-games-section';
+
+    const grid = document.createElement('div');
+    grid.className = 'portal-games-grid';
+
+    GAMES.forEach(game => grid.appendChild(buildCard(game)));
+    section.appendChild(grid);
+    return section;
+  }
+
+  // ── 個別カード ──
+  function buildCard(game) {
+    const accent = _isDark ? game.darkAccent : game.lightAccent;
+    const bg     = _isDark ? game.darkBg    : game.lightBg;
+
+    const card = document.createElement('div');
+    card.className          = 'portal-game-card' + (game.enabled ? '' : ' portal-card-disabled');
+    card.style.background   = bg;
+    card.dataset.gameId     = game.id;
+    card.dataset.gameName   = game.gameName || '';
+    card.style.setProperty('--portal-card-accent', accent);
+
+    // ホバーリフト + グロー（有効カードのみ）
+    if (game.enabled) {
+      card.addEventListener('mouseenter', () => {
+        card.style.transform  = 'translateY(-8px)';
+        card.style.boxShadow  = `0 20px 40px ${hexToRgba(accent, 0.2)}`;
+        card.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
+        card.style.boxShadow = '';
+      });
+    }
+
+    // アイコン
+    const icon = document.createElement('span');
+    icon.className        = 'portal-card-icon';
+    icon.textContent      = game.icon;
+    icon.style.animation  = 'portal-icon-float 3s ease-in-out infinite';
+    card.appendChild(icon);
+
+    // 準備中バッジ
+    if (!game.enabled) {
+      const badge = document.createElement('span');
+      badge.className   = 'portal-coming-soon-badge';
+      badge.textContent = '準備中';
+      card.appendChild(badge);
+    }
+
+    // ゲーム名
+    const name = document.createElement('div');
+    name.className   = 'portal-card-name';
+    name.style.color = accent;
+    name.textContent = game.name;
+    card.appendChild(name);
+
+    // キャッチコピー
+    const catchcopy = document.createElement('p');
+    catchcopy.className   = 'portal-card-catchcopy';
+    catchcopy.textContent = game.catchcopy;
+    card.appendChild(catchcopy);
+
+    // 説明文
+    const descEl = document.createElement('p');
+    descEl.className   = 'portal-card-desc';
+    descEl.textContent = game.desc;
+    card.appendChild(descEl);
+
+    // ボタン
+    const btn = document.createElement('button');
+    btn.className = 'portal-card-btn';
+    if (game.enabled) {
+      btn.textContent        = '体験する →';
+      btn.style.background   = accent;
+      btn.style.color        = _isDark ? '#0f172a' : '#ffffff';
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        startGame(game.gameName);
+      });
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', () => startGame(game.gameName));
+    } else {
+      btn.textContent      = '● Coming Soon';
+      btn.disabled         = true;
+      btn.style.background = 'rgba(100,116,139,0.3)';
+      btn.style.color      = '#94a3b8';
+    }
+    card.appendChild(btn);
+
+    return card;
+  }
+
+  // ── 体験の記録セクション ──
+  function buildRecordSection() {
+    const p       = readProfile();
+    const section = document.createElement('section');
+    section.className = 'portal-record-section';
+
+    const titleEl = document.createElement('h2');
+    titleEl.className   = 'portal-record-title';
+    titleEl.textContent = '体験の記録';
+    section.appendChild(titleEl);
+
+    // 統計
+    const stats = document.createElement('div');
+    stats.className = 'portal-record-stats';
+    stats.appendChild(createStatEl('Rank',  `${p.rank}`,                   'portal-rec-rank'));
+    stats.appendChild(createStatEl('体験',  `${p.clearedGames.length} / 6`, 'portal-rec-count'));
+    stats.appendChild(createStatEl('体験pt', `${p.totalPt}`,               'portal-rec-pt'));
+    section.appendChild(stats);
+
+    // プログレスバー
+    const barBg   = document.createElement('div');
+    barBg.className = 'portal-record-bar-bg';
+    const barFill = document.createElement('div');
+    barFill.className    = 'portal-record-bar-fill';
+    barFill.id           = 'portal-rec-bar';
+    barFill.style.width  = `${p.barPercent}%`;
+    barBg.appendChild(barFill);
+    section.appendChild(barBg);
 
     // リセットボタン
-    const resetBtn = document.getElementById('resetBtn');
-    if (resetBtn) resetBtn.addEventListener('click', showResetDialog);
+    const resetBtn = document.createElement('button');
+    resetBtn.className   = 'portal-reset-btn';
+    resetBtn.id          = 'portal-reset-btn';
+    resetBtn.textContent = '🔄 記録をリセット';
+    section.appendChild(resetBtn);
 
-    const cancelBtn = document.getElementById('resetCancelBtn');
-    if (cancelBtn) cancelBtn.addEventListener('click', hideResetDialog);
-
-    const confirmBtn = document.getElementById('resetConfirmBtn');
-    if (confirmBtn) confirmBtn.addEventListener('click', executeReset);
+    return section;
   }
 
-  // ── ゲーム選択 ──
-  function selectGame(gameId) {
+  function createStatEl(label, value, id) {
+    const stat = document.createElement('div');
+    stat.className = 'portal-record-stat';
+
+    const lbl = document.createElement('span');
+    lbl.className   = 'portal-record-stat-label';
+    lbl.textContent = label;
+    stat.appendChild(lbl);
+
+    const val = document.createElement('span');
+    val.className   = 'portal-record-stat-value';
+    val.id          = id;
+    val.textContent = value;
+    stat.appendChild(val);
+
+    return stat;
+  }
+
+  // ── フッター ──
+  function buildFooter() {
+    const footer = document.createElement('footer');
+    footer.className = 'portal-footer';
+    footer.innerHTML = '制作: 宮﨑秀成（MIYAZAKI）<br>ニコニコ超会議 2026 — FoPs ブース';
+    return footer;
+  }
+
+  // ── リセット確認ダイアログ ──
+  function buildDialog() {
+    const overlay = document.createElement('div');
+    overlay.className = 'portal-dialog-overlay';
+    overlay.id        = 'portal-reset-dialog';
+
+    const box = document.createElement('div');
+    box.className = 'portal-dialog-box';
+    box.innerHTML = `
+      <div class="portal-dialog-title">記録をリセット</div>
+      <p class="portal-dialog-message">すべての体験記録がリセットされます。<br>この操作は取り消せません。</p>
+      <div class="portal-dialog-actions">
+        <button class="portal-dialog-cancel" id="portal-dialog-cancel">やめる</button>
+        <button class="portal-dialog-confirm" id="portal-dialog-confirm">リセットする</button>
+      </div>
+    `;
+    overlay.appendChild(box);
+    return overlay;
+  }
+
+  // ──────────────────────────────────────────────
+  // イベント設定
+  // ──────────────────────────────────────────────
+  function setupEvents() {
+    // リセットボタン → ダイアログ表示
+    const resetBtn = document.getElementById('portal-reset-btn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        const dlg = document.getElementById('portal-reset-dialog');
+        if (dlg) dlg.classList.add('active');
+      });
+    }
+
+    // キャンセル
+    const cancelBtn = document.getElementById('portal-dialog-cancel');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => {
+        const dlg = document.getElementById('portal-reset-dialog');
+        if (dlg) dlg.classList.remove('active');
+      });
+    }
+
+    // 確認リセット
+    const confirmBtn = document.getElementById('portal-dialog-confirm');
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => {
+        localStorage.removeItem(PROFILE_KEY);
+        const dlg = document.getElementById('portal-reset-dialog');
+        if (dlg) dlg.classList.remove('active');
+        refreshProfile();
+      });
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // ゲーム起動
+  // ──────────────────────────────────────────────
+  function startGame(gameName) {
     if (_isTransitioning) return;
-
-    const card = document.querySelector(`#screen-portal .game-card[data-game-id="${gameId}"]`);
-    if (!card) return;
-
-    // 選択フラッシュ
-    card.classList.add('selected');
-
-    setTimeout(() => {
-      card.classList.remove('selected');
-      navigateToGame(gameId);
-    }, 300);
+    navigateToGame(gameName);
   }
 
-  // ── 画面遷移 ──
-  function navigateToGame(gameId) {
+  // ──────────────────────────────────────────────
+  // 画面遷移
+  // ──────────────────────────────────────────────
+  function navigateToGame(gameName) {
     if (_isTransitioning) return;
     _isTransitioning = true;
 
     const portalScreen = document.getElementById('screen-portal');
-    const gameScreen = document.getElementById('screen-game');
+    const gameScreen   = document.getElementById('screen-game');
+    if (!portalScreen || !gameScreen) { _isTransitioning = false; return; }
 
-    // フェードアウト: ポータル
     portalScreen.style.transition = 'opacity 200ms ease-in-out';
-    portalScreen.style.opacity = '0';
+    portalScreen.style.opacity    = '0';
 
     setTimeout(() => {
       portalScreen.classList.remove('visible');
-      portalScreen.style.opacity = '';
+      portalScreen.style.opacity    = '';
       portalScreen.style.transition = '';
 
-      // フェードイン: ゲーム
       gameScreen.classList.add('visible');
-      gameScreen.style.opacity = '0';
+      gameScreen.style.opacity    = '0';
       gameScreen.style.transition = 'opacity 200ms ease-in-out';
 
       requestAnimationFrame(() => {
@@ -348,10 +564,8 @@ const Portal = (() => {
         gameScreen.style.transition = '';
         _isTransitioning = false;
 
-        // 偉人ゲーム起動（script.jsの新関数を呼び出し）
         if (typeof startGameFromPortal === 'function') {
-          const mode = ModeManager.getMode();
-          startGameFromPortal(mode);
+          startGameFromPortal(gameName);
         }
       }, 200);
     }, 200);
@@ -362,23 +576,21 @@ const Portal = (() => {
     _isTransitioning = true;
 
     const portalScreen = document.getElementById('screen-portal');
-    const gameScreen = document.getElementById('screen-game');
+    const gameScreen   = document.getElementById('screen-game');
+    if (!portalScreen || !gameScreen) { _isTransitioning = false; return; }
 
-    // フェードアウト: ゲーム
     gameScreen.style.transition = 'opacity 200ms ease-in-out';
-    gameScreen.style.opacity = '0';
+    gameScreen.style.opacity    = '0';
 
     setTimeout(() => {
       gameScreen.classList.remove('visible');
-      gameScreen.style.opacity = '';
+      gameScreen.style.opacity    = '';
       gameScreen.style.transition = '';
 
-      // プロフィール更新（クリアされている可能性）
       refreshProfile();
 
-      // フェードイン: ポータル
       portalScreen.classList.add('visible');
-      portalScreen.style.opacity = '0';
+      portalScreen.style.opacity    = '0';
       portalScreen.style.transition = 'opacity 200ms ease-in-out';
 
       requestAnimationFrame(() => {
@@ -393,58 +605,54 @@ const Portal = (() => {
     }, 200);
   }
 
-  // ── プロフィール更新 ──
+  // ──────────────────────────────────────────────
+  // プロフィール更新（ゲーム画面から戻った後に呼ぶ）
+  // ──────────────────────────────────────────────
   function refreshProfile() {
-    loadRecord();
     const p = readProfile();
-    const lvEl = document.getElementById('portalRecLv');
-    const expEl = document.getElementById('portalRecExpText');
-    const expNextEl = document.getElementById('portalRecExpNext');
-    const barEl = document.getElementById('portalRecBarFill');
-    const countEl = document.getElementById('portalRecClearedCount');
-    const gamesEl = document.getElementById('portalRecGames');
-    if (lvEl) lvEl.textContent = `Lv ${p.level}`;
-    if (expEl) expEl.textContent = `${p.totalExp} EXP`;
-    if (expNextEl) expNextEl.textContent = `次のLvまで ${p.expToNext}`;
-    if (barEl) barEl.style.width = `${p.barPercent}%`;
-    if (countEl) countEl.textContent = `${p.clearedGames.length} / 5 冒険`;
-    if (gamesEl) gamesEl.innerHTML = buildRecordGamesHTML(p.clearedGames);
+
+    const rankEl  = document.getElementById('portal-rec-rank');
+    const countEl = document.getElementById('portal-rec-count');
+    const ptEl    = document.getElementById('portal-rec-pt');
+    const barEl   = document.getElementById('portal-rec-bar');
+
+    if (rankEl)  rankEl.textContent  = `${p.rank}`;
+    if (countEl) countEl.textContent = `${p.clearedGames.length} / 6`;
+    if (ptEl)    ptEl.textContent    = `${p.totalPt}`;
+    if (barEl)   barEl.style.width   = `${p.barPercent}%`;
   }
 
-  // ── リセット ──
-  function showResetDialog() {
-    const dialog = document.getElementById('resetDialog');
-    if (dialog) dialog.classList.add('active');
+  // ──────────────────────────────────────────────
+  // 公開ヘルパー
+  // ──────────────────────────────────────────────
+  function isEnabled() {
+    return !!document.getElementById('screen-portal');
   }
 
-  function hideResetDialog() {
-    const dialog = document.getElementById('resetDialog');
-    if (dialog) dialog.classList.remove('active');
+  /** Phase 2以降で接続 */
+  function markGameCleared(gameId) {
+    console.log('[Portal] markGameCleared:', gameId);
   }
 
-  function executeReset() {
-    resetRecord();
-    localStorage.removeItem('ai-adventure-profile');
-    refreshProfile();
-    hideResetDialog();
-    console.log('[Portal] Reset complete');
-  }
-
-  // ── 初期化 ──
+  // ──────────────────────────────────────────────
+  // 初期化
+  // ──────────────────────────────────────────────
   function init() {
     if (!isEnabled()) return;
+
+    loadTheme();
     buildPortalScreen();
 
-    // 戻るボタン
+    // 戻るボタン（#screen-game 内）
     const backBtn = document.getElementById('back-to-portal');
     if (backBtn) {
       backBtn.addEventListener('click', () => Portal.navigateToPortal());
     }
 
-    console.log('[Portal] Initialized');
+    console.log('[Portal] Initialized v2 — 6つのAI体験');
   }
 
-  // 公開API
+  // ── 公開API ──
   return {
     init,
     isEnabled,
@@ -455,7 +663,6 @@ const Portal = (() => {
   };
 })();
 
-// DOMContentLoaded で初期化
 document.addEventListener('DOMContentLoaded', () => {
   Portal.init();
 });

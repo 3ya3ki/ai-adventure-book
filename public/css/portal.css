@@ -1,633 +1,540 @@
 /* ============================================================
-   portal.css — RPGポータル画面
-   AI冒険の書 Phase 1
+   portal.css — 6つのAI体験 ポータル画面
+   Phase 2 全面差し替え
    ============================================================ */
 
-/* ── 画面切替 ── */
+/* ── 画面切替（必須・変更不可） ── */
 .screen {
   display: none;
-  opacity: 0;
-  transition: opacity 200ms ease-in-out;
 }
 
 .screen.visible {
   display: block;
-  opacity: 1;
 }
 
-/* ── ポータル全体ラッパー ── */
-#screen-portal {
-  max-width: 768px;
-  margin: 0 auto;
-  padding: 0 1rem 4rem;
+/* ── body テーマ ── */
+body.portal-dark {
+  background: #0f172a;
+  color: #f1f5f9;
 }
 
-/* ── キーフレーム ── */
-@keyframes portal-fadeScaleUp {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1.0);
-  }
+body.portal-light {
+  background: #f8fafc;
+  color: #0f172a;
 }
 
-@keyframes portal-fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+/* ── オーロラCanvas（JS で生成・body 直下に挿入） ── */
+#portal-aurora-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
 }
 
-@keyframes portal-fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes portal-fadeInUpDisabled {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 0.4;
-    transform: translateY(0);
-  }
-}
-
-@keyframes portal-pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 8px rgba(212, 168, 67, 0.15);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(212, 168, 67, 0.35);
-  }
-}
-
-@keyframes portal-selectFlash {
-  0%   { border-color: var(--border-gold); }
-  50%  { border-color: #ffffff; }
-  100% { border-color: var(--border-gold); }
-}
-
-/* ── ポータルヘッダー ── */
-.portal-header {
-  text-align: center;
-  margin-bottom: 2rem;
-  padding-top: 2.5rem;
-}
-
-.portal-title {
-  font-family: var(--font-pixel);
-  font-size: 2.2rem;
-  color: var(--gold-primary);
-  text-shadow: 0 0 20px rgba(212, 168, 67, 0.4);
-  margin: 0 0 0.5rem;
-  opacity: 0;
-  animation: portal-fadeScaleUp 500ms ease-out forwards;
-}
-
-.portal-subtitle {
-  font-family: var(--font-body);
-  color: var(--text-secondary);
-  font-size: 1rem;
-  margin: 0 0 1rem;
-  opacity: 0;
-  animation: portal-fadeIn 400ms ease-out 150ms forwards;
-}
-
-.portal-divider {
-  width: 200px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border-gold), transparent);
-  margin: 0 auto;
-  opacity: 0;
-  animation: portal-fadeIn 400ms ease-out 300ms forwards;
-}
-
-/* ── おすすめルートバナー ── */
-.portal-recommend {
-  margin-bottom: 2rem;
-}
-
-.recommend-banner {
-  background: var(--bg-card);
-  border: 1px solid var(--border-gold);
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  animation: portal-pulseGlow 2000ms ease-in-out infinite;
-}
-
-.recommend-banner-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.875rem 1.25rem;
-}
-
-.recommend-banner-icon {
-  font-size: 1.25rem;
-}
-
-.recommend-banner-text {
-  flex: 1;
-  font-family: var(--font-pixel);
-  color: var(--gold-light);
-  font-size: 0.95rem;
-}
-
-.recommend-banner-arrow {
-  display: inline-block;
-  color: var(--gold-primary);
-  font-size: 0.8rem;
-  transition: transform 400ms ease-out;
-}
-
-.recommend-banner.expanded .recommend-banner-arrow {
-  transform: rotate(180deg);
-}
-
-.recommend-body {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 400ms ease-out;
-}
-
-.recommend-banner.expanded .recommend-body {
-  max-height: 400px;
-}
-
-.recommend-body-inner {
-  padding: 0 1.25rem 1.25rem;
-  border-top: 1px solid var(--border-rpg);
-}
-
-.recommend-description {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  line-height: 1.6;
-  margin: 1rem 0;
-}
-
-.recommend-route-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.recommend-route-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--text-primary);
-  font-size: 0.875rem;
-}
-
-.recommend-route-number {
+/* ── テーマ切り替えボタン ── */
+.portal-theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 50;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--gold-primary);
-  color: var(--bg-primary);
-  font-family: var(--font-pixel);
-  font-size: 0.75rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.recommend-start-btn {
-  display: block;
-  width: 100%;
-  padding: 0.75rem;
-  font-family: var(--font-pixel);
-  font-size: 0.9rem;
-  color: var(--gold-light);
-  background: transparent;
-  border: 1px solid var(--border-gold);
-  border-radius: 8px;
+  font-size: 18px;
   cursor: pointer;
-  transition: background 250ms ease-out, color 250ms ease-out;
+  transition: transform 0.2s ease, background 0.2s ease;
+  line-height: 1;
 }
 
-.recommend-start-btn:hover {
-  background: var(--gold-primary);
-  color: var(--bg-primary);
+.portal-theme-toggle:hover {
+  transform: scale(1.1);
 }
 
-/* ── ゲーム選択グリッド ── */
-.portal-games {
-  margin-bottom: 2rem;
+body.portal-light .portal-theme-toggle {
+  border-color: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.06);
 }
 
-.portal-games-title {
+/* ── ポータル画面全体 ── */
+#screen-portal {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+/* ── コンテンツラッパー ── */
+.portal-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 64px 24px 96px;
+}
+
+/* ── キーフレーム ── */
+@keyframes portal-char-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes portal-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes portal-card-in {
+  from {
+    opacity: 0;
+    translate: 0 30px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes portal-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-2px); }
+}
+
+@keyframes portal-icon-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+
+/* ── ヘッダー ── */
+.portal-header {
   text-align: center;
-  font-family: var(--font-pixel);
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  margin-bottom: 1rem;
+  margin-bottom: 56px;
+}
+
+.portal-sub-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin: 0 0 16px;
+}
+
+.portal-main-title {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0 0 24px;
+}
+
+.portal-main-title .char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: portal-char-in 0.6s ease-out forwards;
+}
+
+.portal-tagline {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  opacity: 0;
+  animation: portal-fade-up 0.5s ease-out 0.6s forwards;
+}
+
+.portal-description {
+  font-size: 0.95rem;
+  font-weight: 400;
+  opacity: 0;
+  animation: portal-fade-up 0.5s ease-out 0.8s forwards;
+}
+
+body.portal-dark .portal-tagline,
+body.portal-dark .portal-description {
+  color: #cbd5e1;
+}
+
+body.portal-light .portal-tagline,
+body.portal-light .portal-description {
+  color: #475569;
+}
+
+/* ── 6カードグリッド ── */
+.portal-games-section {
+  margin-bottom: 64px;
 }
 
 .portal-games-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
 }
 
-/* 最後の1枚が奇数番目の場合は中央寄せ */
-.portal-games-grid > :last-child:nth-child(odd) {
-  grid-column: 1 / -1;
-  max-width: 50%;
-  margin: 0 auto;
+/* ── ゲームカード ── */
+.portal-game-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 28px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+body.portal-light .portal-game-card {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.portal-game-card.portal-card-animated {
+  animation: portal-card-in 0.5s ease-out forwards;
+}
+
+.portal-game-card:not(.portal-card-disabled):hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px color-mix(in srgb, var(--portal-card-accent, #888) 20%, transparent);
+}
+
+/* ── カードアイコン ── */
+.portal-card-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+  animation: portal-icon-float 3s ease-in-out infinite;
+}
+
+/* ── 準備中バッジ ── */
+.portal-coming-soon-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(100, 116, 139, 0.4);
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* ── ゲーム名（ホバーで下線） ── */
+.portal-card-name {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  display: inline-block;
+  position: relative;
+}
+
+.portal-card-name::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--portal-card-accent, currentColor);
+  transition: width 0.3s ease;
+}
+
+.portal-game-card:not(.portal-card-disabled):hover .portal-card-name::after {
   width: 100%;
 }
 
-/* ── アクティブカード ── */
-.game-card {
-  position: relative;
-  background: #0f1629;
-  border: 1px solid var(--border-rpg);
-  border-radius: 12px;
-  padding: 1.25rem 1rem;
-  cursor: pointer;
-  overflow: hidden;
-  opacity: 0;
-  animation: portal-fadeInUp 400ms ease-out forwards;
-  box-shadow: 0 0 20px rgba(212, 168, 67, 0.15);
-  transition: transform 250ms ease-out, box-shadow 250ms ease-out, border-color 250ms ease-out;
+/* ── カードテキスト ── */
+.portal-card-catchcopy {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 8px;
 }
 
-.game-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 40%;
-  background: linear-gradient(180deg, rgba(212, 168, 67, 0.04) 0%, transparent 100%);
-  pointer-events: none;
+body.portal-dark .portal-card-catchcopy {
+  color: #e2e8f0;
 }
 
-.game-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 32px rgba(212, 168, 67, 0.25);
-  border-color: var(--border-gold);
+body.portal-light .portal-card-catchcopy {
+  color: #334155;
 }
 
-.game-card:active {
-  transform: scale(0.97);
+.portal-card-desc {
+  font-size: 13px;
+  margin: 0 0 20px;
+  line-height: 1.6;
 }
 
-.game-card.selected {
-  animation: portal-selectFlash 300ms ease-out forwards;
-  opacity: 1;
-  transform: none;
+body.portal-dark .portal-card-desc {
+  color: #94a3b8;
 }
 
-/* ── stagger アニメーション ── */
-.stagger-1 { animation-delay:   0ms; }
-.stagger-2 { animation-delay: 100ms; }
-.stagger-3 { animation-delay: 200ms; }
-.stagger-4 { animation-delay: 300ms; }
-.stagger-5 { animation-delay: 400ms; }
-
-/* ── アクティブカード内容 ── */
-.game-card-icon {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+body.portal-light .portal-card-desc {
+  color: #64748b;
 }
 
-.game-card-rpg-name {
-  font-family: var(--font-pixel);
-  font-size: 0.95rem;
-  color: var(--gold-light);
-  margin-bottom: 0.25rem;
-}
-
-.game-card-real-name {
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-}
-
-.game-card-desc {
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  color: var(--text-primary);
-  line-height: 1.5;
-  margin-bottom: 0.75rem;
-}
-
-.game-card-meta {
-  display: flex;
+/* ── カードボタン ── */
+.portal-card-btn {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+  gap: 6px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
-.game-card-tier {
-  font-family: var(--font-pixel);
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  padding: 2px 6px;
-  border: 1px solid var(--border-rpg);
-  border-radius: 4px;
+.portal-card-btn:not(:disabled):hover {
+  transform: scale(1.05);
 }
 
-.game-card-tier.tier-active {
-  color: var(--gold-primary);
-  border-color: var(--border-gold);
-}
-
-.game-card-time {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-/* ── グレーアウトカード ── */
-.game-card-disabled {
-  position: relative;
-  background: #0f1629;
-  border: 1px solid #555;
-  border-radius: 12px;
-  padding: 1.25rem 1rem;
+.portal-card-btn:disabled {
   cursor: not-allowed;
-  opacity: 0;
-  animation: portal-fadeInUpDisabled 400ms ease-out forwards;
-  transition: opacity 250ms ease-out;
-  /* overflow visible でツールチップを外部に表示 */
 }
 
-.game-card-disabled:hover {
+/* ── 無効カード ── */
+.portal-card-disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+/* ── 体験の記録セクション ── */
+.portal-record-section {
+  max-width: 600px;
+  margin: 0 auto 48px;
+  padding: 32px;
+  border-radius: 16px;
+}
+
+body.portal-dark .portal-record-section {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.portal-light .portal-record-section {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.portal-record-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  margin: 0 0 20px;
+}
+
+.portal-record-stats {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.portal-record-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.portal-record-stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   opacity: 0.5;
 }
 
-.game-card-lock {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  font-size: 0.75rem;
-}
-
-/* ツールチップ */
-.game-card-disabled .tooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-rpg);
-  color: var(--text-secondary);
-  font-size: 0.75rem;
-  padding: 4px 10px;
-  border-radius: 6px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 200ms ease-out;
-  z-index: 10;
-}
-
-.game-card-disabled:hover .tooltip {
-  opacity: 1;
-}
-
-.game-card-status {
-  text-align: center;
-  font-family: var(--font-pixel);
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-top: 0.5rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--border-rpg);
-}
-
-/* ── 成長プロフィールパネル ── */
-.portal-profile {
-  margin-bottom: 1.5rem;
-}
-
-.profile-panel {
-  padding: 1.25rem;
-}
-
-.profile-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.profile-header-icon {
-  font-size: 1.1rem;
-}
-
-.profile-header-title {
-  font-family: var(--font-pixel);
-  color: var(--gold-light);
-  font-size: 0.9rem;
-}
-
-.profile-level {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.profile-level-label {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.25rem;
-}
-
-.profile-level-value {
-  font-family: var(--font-pixel);
-  font-size: 2.2rem;
-  color: var(--gold-primary);
-  text-shadow: 0 0 12px rgba(212, 168, 67, 0.4);
+.portal-record-stat-value {
+  font-size: 24px;
+  font-weight: 700;
   line-height: 1;
+  font-family: 'IBM Plex Sans', sans-serif;
 }
 
-.profile-level-max {
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin-left: 0.25rem;
-}
-
-.profile-level-bar {
+.portal-record-bar-bg {
   height: 6px;
-  background: var(--border-rpg);
   border-radius: 3px;
+  margin-bottom: 20px;
   overflow: hidden;
 }
 
-.profile-level-bar-fill {
+body.portal-dark .portal-record-bar-bg {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.portal-light .portal-record-bar-bg {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.portal-record-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--gold-dim), var(--gold-primary));
   border-radius: 3px;
-  transition: width 600ms ease-out;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  transition: width 0.8s ease;
 }
 
-.profile-games-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.profile-game-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.profile-game-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  font-size: 0.7rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.profile-game-status.cleared {
-  background: var(--gold-primary);
-  color: var(--bg-primary);
-}
-
-.profile-game-status.not-played {
-  background: var(--border-rpg);
-  color: var(--text-muted);
-}
-
-.profile-game-name {
-  font-size: 0.85rem;
-  color: var(--text-primary);
-}
-
-.profile-game-name.disabled {
-  color: var(--text-muted);
-}
-
-/* ── リセットボタン ── */
-.portal-reset {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
-}
-
-.reset-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.portal-reset-btn {
   background: none;
   border: none;
-  color: var(--text-muted);
-  font-size: 0.8rem;
   cursor: pointer;
-  padding: 0.5rem;
-  transition: color 200ms ease-out;
+  font-size: 12px;
+  font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
+  opacity: 0.4;
+  padding: 0;
+  transition: opacity 0.2s ease;
 }
 
-.reset-btn:hover {
-  color: var(--gold-primary);
+body.portal-dark .portal-reset-btn {
+  color: #f1f5f9;
+}
+
+body.portal-light .portal-reset-btn {
+  color: #0f172a;
+}
+
+.portal-reset-btn:hover {
+  opacity: 0.8;
+}
+
+/* ── フッター ── */
+.portal-footer {
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.8;
+  opacity: 0.4;
+  margin-top: 0;
 }
 
 /* ── リセット確認ダイアログ ── */
-.dialog-overlay {
+.portal-dialog-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(10, 14, 26, 0.85);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 200ms ease-in-out;
-  z-index: 100;
+  transition: opacity 0.2s ease;
+  z-index: 200;
 }
 
-.dialog-overlay.active {
+.portal-dialog-overlay.active {
   opacity: 1;
   pointer-events: all;
 }
 
-.dialog-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border-gold);
-  border-radius: 12px;
-  padding: 1.5rem;
-  max-width: 320px;
+.portal-dialog-box {
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 340px;
   width: 90%;
-  animation: portal-fadeIn 200ms ease-out;
 }
 
-.dialog-title {
-  font-family: var(--font-pixel);
-  color: var(--gold-light);
-  font-size: 1rem;
-  margin-bottom: 0.75rem;
+body.portal-dark .portal-dialog-box {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
 }
 
-.dialog-message {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
+body.portal-light .portal-dialog-box {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+}
+
+.portal-dialog-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.portal-dialog-message {
+  font-size: 14px;
   line-height: 1.6;
-  margin-bottom: 1.25rem;
+  margin: 0 0 24px;
+  opacity: 0.7;
 }
 
-.dialog-actions {
+.portal-dialog-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 12px;
   justify-content: flex-end;
 }
 
-.dialog-btn {
-  padding: 0.5rem 1.25rem;
+.portal-dialog-cancel {
+  padding: 8px 20px;
   border-radius: 8px;
-  font-family: var(--font-pixel);
-  font-size: 0.85rem;
+  background: transparent;
+  font-size: 14px;
+  font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
   cursor: pointer;
-  transition: background 200ms ease-out, color 200ms ease-out;
+  transition: background 0.2s ease;
 }
 
-.dialog-btn-cancel {
-  background: transparent;
-  color: var(--gold-light);
-  border: 1px solid var(--border-gold);
+body.portal-dark .portal-dialog-cancel {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f1f5f9;
 }
 
-.dialog-btn-cancel:hover {
-  background: var(--bg-card-hover);
+body.portal-light .portal-dialog-cancel {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #0f172a;
 }
 
-.dialog-btn-confirm {
-  background: transparent;
-  color: var(--danger);
-  border: 1px solid var(--danger);
+.portal-dialog-cancel:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.dialog-btn-confirm:hover {
-  background: var(--danger);
+body.portal-light .portal-dialog-cancel:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.portal-dialog-confirm {
+  padding: 8px 20px;
+  border-radius: 8px;
+  background: #ef4444;
+  border: none;
   color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-/* ── 戻るボタン ── */
+.portal-dialog-confirm:hover {
+  background: #dc2626;
+}
+
+/* ── screen-game（変更不可） ── */
+#screen-game {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* ── 戻るボタン（変更不可） ── */
 .back-btn {
   position: absolute;
   top: 12px;
@@ -637,8 +544,8 @@
   gap: 0.25rem;
   background: none;
   border: none;
-  color: var(--gold-primary);
-  font-family: var(--font-pixel);
+  color: var(--gold-primary, #d4a843);
+  font-family: var(--font-pixel, monospace);
   font-size: 0.85rem;
   cursor: pointer;
   padding: 0.5rem;
@@ -663,247 +570,61 @@
   opacity: 0.7;
 }
 
-/* screen-game の位置基準 */
-#screen-game {
-  position: relative;
-  min-height: 100vh;
-}
-
 /* ── レスポンシブ ── */
 @media (max-width: 1023px) {
+  .portal-games-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
   .portal-games-grid {
     grid-template-columns: 1fr;
   }
 
-  .portal-games-grid > :last-child:nth-child(odd) {
-    grid-column: auto;
-    max-width: 100%;
+  .portal-content {
+    padding: 48px 16px 64px;
   }
 
-  .game-card:hover {
+  .portal-record-stats {
+    gap: 20px;
+  }
+
+  .portal-game-card:not(.portal-card-disabled):hover {
     transform: none;
-    box-shadow: 0 0 20px rgba(212, 168, 67, 0.15);
   }
-
-  .game-card-disabled:hover {
-    opacity: 0.4;
-  }
-}
-
-@media (max-width: 480px) {
-  .portal-title {
-    font-size: 1.8rem;
-  }
-
-  .game-card {
-    padding: 1rem 0.875rem;
-  }
-
-  .game-card-disabled {
-    padding: 1rem 0.875rem;
-  }
-}
-
-/* ── 冒険の記録セクション（Phase 1.5） ── */
-.portal-rec-level-area {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  padding-bottom: 12px;
-}
-
-.portal-rec-level-left {
-  flex-shrink: 0;
-}
-
-.portal-rec-label {
-  font-family: var(--font-pixel);
-  font-size: 0.7rem;
-  color: rgba(212, 168, 67, 0.6);
-  letter-spacing: 0.12em;
-  margin-bottom: 4px;
-}
-
-.portal-rec-lv {
-  font-family: var(--font-pixel);
-  font-size: 2.2rem;
-  color: var(--gold-primary);
-  text-shadow: 0 0 12px rgba(212, 168, 67, 0.4);
-  line-height: 1;
-}
-
-.portal-rec-level-right {
-  flex: 1;
-  text-align: right;
-  min-width: 0;
-  padding-top: 2px;
-}
-
-.portal-rec-exp-text {
-  font-family: var(--font-pixel);
-  font-size: 0.9rem;
-  color: var(--gold-primary);
-  margin-bottom: 2px;
-}
-
-.portal-rec-exp-next {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-}
-
-.portal-rec-bar-bg {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 3px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.portal-rec-bar-fill {
-  height: 100%;
-  background: linear-gradient(to right, rgba(212, 168, 67, 0.6), var(--gold-light));
-  border-radius: 3px;
-  box-shadow: 0 0 6px rgba(212, 168, 67, 0.4);
-  transition: width 0.8s ease;
-}
-
-.portal-rec-divider {
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(200, 162, 78, 0.3), transparent);
-  margin: 4px 0 14px;
-}
-
-.portal-rec-cleared-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.portal-rec-cleared-label {
-  font-family: var(--font-pixel);
-  font-size: 0.7rem;
-  color: rgba(212, 168, 67, 0.6);
-  letter-spacing: 0.1em;
-}
-
-.portal-rec-cleared-count {
-  font-family: var(--font-pixel);
-  font-size: 0.8rem;
-  color: var(--gold-primary);
-}
-
-.portal-rec-games {
-  display: flex;
-  flex-direction: column;
-}
-
-.portal-rec-game-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.portal-rec-game-item:last-child {
-  border-bottom: none;
-}
-
-.portal-rec-game-dot {
-  font-size: 0.5rem;
-  flex-shrink: 0;
-}
-
-.portal-rec-dot-cleared {
-  color: var(--gold-primary);
-}
-
-.portal-rec-dot-pending {
-  color: rgba(255, 255, 255, 0.2);
-}
-
-.portal-rec-game-name {
-  flex: 1;
-  font-size: 0.82rem;
-}
-
-.portal-rec-game-name.cleared {
-  color: var(--text-primary);
-}
-
-.portal-rec-game-name.pending {
-  color: rgba(255, 255, 255, 0.3);
-}
-
-.portal-rec-game-badge {
-  font-family: var(--font-pixel);
-  font-size: 0.65rem;
-  color: var(--bg-primary);
-  background: var(--gold-primary);
-  padding: 1px 7px;
-  border-radius: 20px;
-  flex-shrink: 0;
 }
 
 /* ── prefers-reduced-motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .portal-title,
-  .portal-subtitle,
-  .portal-divider {
+  .portal-main-title .char {
     animation: none;
     opacity: 1;
-  }
-
-  .game-card {
-    animation: none;
-    opacity: 1;
-    transition: none;
-  }
-
-  .game-card:hover {
     transform: none;
   }
 
-  .game-card.selected {
+  .portal-tagline,
+  .portal-description {
+    animation: none;
+    opacity: 1;
+  }
+
+  .portal-game-card.portal-card-animated {
+    animation: none;
+    opacity: 1;
+    translate: none;
+  }
+
+  .portal-card-icon {
     animation: none;
   }
 
-  .game-card-disabled {
-    animation: none;
-    opacity: 0.4;
-    transition: none;
+  .portal-game-card:not(.portal-card-disabled):hover {
+    transform: none;
   }
 
-  .recommend-banner {
-    animation: none;
-    box-shadow: none;
-  }
-
-  .recommend-body {
-    transition: none;
-  }
-
-  .recommend-banner-arrow {
-    transition: none;
-  }
-
-  .recommend-start-btn {
-    transition: none;
-  }
-
-  .profile-level-bar-fill {
-    transition: none;
-  }
-
-  .back-btn-arrow {
-    transition: none;
-  }
-
-  .dialog-overlay {
-    transition: none;
+  .portal-card-btn:not(:disabled):hover {
+    transform: none;
   }
 
   .screen {

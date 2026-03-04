@@ -866,8 +866,8 @@ async function triggerClearSequence() {
 async function showClearScreen() {
   const profile = await SageProfileLoader.getMergedProfile(gameState.selectedSage);
   const savedProfile = JSON.parse(
-    localStorage.getItem('ai-adventure-profile') ||
-    '{"level":1,"totalExp":0,"gamesCleared":0,"clearedGames":[],"achievements":[]}'
+    localStorage.getItem('ai-experience-profile') ||
+    '{"rank":0,"totalPt":0,"gamesCleared":0,"clearedGames":[],"achievements":[]}'
   );
 
   // コレクションに保存
@@ -878,7 +878,7 @@ async function showClearScreen() {
     sageIcon: profile?.icon || '',
     questionType: gameState.problemType ? `型${gameState.problemType}` : '—',
     dialogueCount: gameState.turnCount,
-    currentLevel: savedProfile.level,
+    currentLevel: savedProfile.rank,
     gamesCleared: savedProfile.gamesCleared
   });
 }

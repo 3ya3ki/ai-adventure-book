@@ -167,3 +167,10 @@ ai-adventure-book/
 - 星座アイコンの配色はRPGカラーパレット（gold系）を使用。紫系は使用禁止
 - `ResultCard.show(params)` のインターフェースを変更する場合は script.js 側も同時に更新すること
 - LocalStorage `ai-adventure-profile` のスキーマ: `{level, totalExp, gamesCleared, clearedGames[], achievements[]}`
+
+## Phase A 追加ルール（2026-03-04）
+- LocalStorageキー: "ai-experience-profile"（旧 "ai-adventure-profile" から変更）
+- フィールド: .rank（旧 .level）、.totalPt（旧 .totalExp）、.clearedGames（変更なし）
+- ポータルフォント: IBM Plex Sans + Noto Sans JP（Pixelify Sans は撤廃）
+- ポータル画面: カード型ショーケース（RPG世界観は撤廃）
+- クリア演出: "COMPLETE!" / "体験pt" / "RANK UP!" / 紙吹雪

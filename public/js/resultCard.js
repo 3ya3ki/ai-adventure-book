@@ -1,5 +1,5 @@
-// ResultCard — クリア演出 v1.4
-// 合格済みArtifactのcontractに基づく実装
+// ResultCard — クリア演出 v2.0
+// B1〜B11 テキスト変更 + B4 Canvas紙吹雪パーティクル差し替え
 const ResultCard = (() => {
   // --- 内部状態 ---
   let canvas, ctx;
@@ -7,7 +7,7 @@ const ResultCard = (() => {
   let rafId = null;
   let resizeHandler = null;
 
-  // --- Canvas パーティクル ---
+  // --- Canvas パーティクル（紙吹雪 + スパーク）---
   function canvasLoop(now) {
     if (particles.length === 0) {
       rafId = null;
@@ -16,82 +16,78 @@ const ResultCard = (() => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
-      const raw = Math.min((now - p.startTime) / p.dur, 1);
-      const ease = 1 - Math.pow(1 - raw, 3);
-      const x = p.cx + p.dx * ease;
-      const y = p.cy + p.dy * ease;
-      const r = p.r * (1 - raw * 0.7);
-      const a = 1 - raw;
-      if (r > 0.3 && a > 0.01) {
-        // 現在の回転角 = 初期角 + 回転速度 × 経過時間
-        const currentAngle = p.angle + p.rot * (now - p.startTime) / 1000;
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(currentAngle);
-        ctx.globalAlpha = a;
-        // ① 中心の輝き（白い円形グロー）
-        const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 1.2);
-        glow.addColorStop(0, `rgba(255,255,255,${a})`);
-        glow.addColorStop(0.4, `rgba(255,248,200,${a * .6})`);
-        glow.addColorStop(1, `rgba(212,168,67,0)`);
+      const elapsed = (now - p.startTime) / 1000; // 秒
+      const raw = elapsed / (p.life / 1000);
+      if (raw >= 1) { particles.splice(i, 1); continue; }
+
+      // 位置: 重力シミュレーション + sin横揺れ
+      const x = p.cx + p.vx * elapsed
+                + Math.sin(elapsed * p.swayFreq) * p.swayAmp;
+      const y = p.cy + p.vy * elapsed + 0.5 * p.ay * elapsed * elapsed;
+
+      const alpha = 1 - raw; // 線形フェードアウト
+      const angle = p.rotation + p.rotSpeed * elapsed;
+      const s = p.size;
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.fillStyle = p.color;
+
+      if (p.shape === 'square') {
+        ctx.fillRect(-s / 2, -s / 2, s, s);
+      } else if (p.shape === 'circle') {
         ctx.beginPath();
-        ctx.arc(0, 0, r * 1.2, 0, Math.PI * 2);
-        ctx.fillStyle = glow;
+        ctx.arc(0, 0, s / 2, 0, Math.PI * 2);
         ctx.fill();
-        // ② 十字スパーク本体（縦横 2本の細長いひし形）
-        const armLen = r * 3.5;
-        const armW = r * 0.35;
-        // 縦の腕
+      } else {
+        // triangle
         ctx.beginPath();
-        ctx.moveTo(0, -armLen);
-        ctx.lineTo(armW, 0);
-        ctx.lineTo(0, armLen);
-        ctx.lineTo(-armW, 0);
+        ctx.moveTo(0, -s / 2);
+        ctx.lineTo(s / 2, s / 2);
+        ctx.lineTo(-s / 2, s / 2);
         ctx.closePath();
-        const armGrad = ctx.createLinearGradient(0, -armLen, 0, armLen);
-        armGrad.addColorStop(0, `rgba(212,168,67,${a * .3})`);
-        armGrad.addColorStop(0.4, `rgba(255,255,255,${a})`);
-        armGrad.addColorStop(0.5, `rgba(255,255,255,${a})`);
-        armGrad.addColorStop(0.6, `rgba(255,255,255,${a})`);
-        armGrad.addColorStop(1, `rgba(212,168,67,${a * .3})`);
-        ctx.fillStyle = armGrad;
         ctx.fill();
-        // 横の腕（90°回転して描く）
-        ctx.rotate(Math.PI / 2);
-        ctx.beginPath();
-        ctx.moveTo(0, -armLen);
-        ctx.lineTo(armW, 0);
-        ctx.lineTo(0, armLen);
-        ctx.lineTo(-armW, 0);
-        ctx.closePath();
-        ctx.fillStyle = armGrad;
-        ctx.fill();
-        ctx.restore();
       }
-      if (raw >= 1) particles.splice(i, 1);
+      ctx.restore();
     }
     rafId = requestAnimationFrame(canvasLoop);
   }
 
   function createParticleBurst(originX, originY, count) {
-    const cx = canvas.width * (originX / 100);
+    const cx = canvas.width  * (originX / 100);
     const cy = canvas.height * (originY / 100);
+
     for (let i = 0; i < count; i++) {
       setTimeout(() => {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 80 + Math.random() * 160;
+        // 形状: 60% 四角、25% 丸、15% 三角
+        const sr = Math.random();
+        const shape = sr < 0.60 ? 'square' : sr < 0.85 ? 'circle' : 'triangle';
+
+        // 色: 偉人アクセント #f59e0b、ゴールド #ffd700、白 #ffffff
+        const cr = Math.random();
+        const color = cr < 0.40 ? '#f59e0b' : cr < 0.75 ? '#ffd700' : '#ffffff';
+
         particles.push({
-          cx, cy,
-          dx: Math.cos(angle) * dist,
-          dy: Math.sin(angle) * dist,
-          r: 6 + Math.random() * 10,
-          dur: 700 + Math.random() * 500,
-          angle: Math.random() * Math.PI * 2,
-          rot: (Math.random() - 0.5) * 6,
-          startTime: performance.now()
+          cx,
+          cy,
+          vx:       (Math.random() - 0.5) * 200,
+          vy:       -(300 + Math.random() * 300),  // 初速Y: -300〜-600（上向き）
+          ay:        700 + Math.random() * 200,     // 重力 700〜900 px/s²
+          swayFreq:  2   + Math.random() * 2,       // 2〜4 Hz
+          swayAmp:   30  + Math.random() * 30,      // 30〜60 px
+          size:      4   + Math.random() * 6,        // 4〜10 px
+          shape,
+          color,
+          rotation:  Math.random() * Math.PI * 2,
+          rotSpeed:  (Math.random() - 0.5) * 8,    // -4〜4 rad/s
+          life:      800 + Math.random() * 700,     // 0.8〜1.5 秒 (ms)
+          startTime: performance.now(),
         });
+
         if (!rafId) rafId = requestAnimationFrame(canvasLoop);
-      }, i * 20);
+      }, i * 15);
     }
   }
 
@@ -100,24 +96,28 @@ const ResultCard = (() => {
     /**
      * クリア演出を開始する
      * @param {Object} params
-     * @param {string} params.sageName - 偉人名（例: "ソクラテス"）
-     * @param {string} params.sageIcon - 偉人アイコン（例: "🏛"）
-     * @param {string} params.questionType - 問いの型（例: "型3"）、取得不可なら "—"
+     * @param {string} params.sageName      - 偉人名（例: "ソクラテス"）
+     * @param {string} params.sageIcon      - 偉人アイコン（例: "🏛"）
+     * @param {string} params.questionType  - 問いの型（例: "型3"）、取得不可なら "—"
      * @param {number} params.dialogueCount - 対話回数
-     * @param {number} params.currentLevel - 現在のレベル（クリア前）
-     * @param {number} params.gamesCleared - クリア済みゲーム数（クリア前）
+     * @param {number} params.currentLevel  - 現在のレベル（クリア前）
+     * @param {number} params.gamesCleared  - クリア済みゲーム数（クリア前）
+     * @param {string} [params.gameName]    - ゲーム名（省略時: "🏛️ 偉人とともに考える"）
      */
     show(params) {
+      // B6: ゲーム名（script.js が未対応の間はデフォルト値を使用）
+      const gameName = params.gameName || '🏛️ 偉人とともに考える';
+
       // LocalStorage更新（演出表示前）
-      const profileKey = 'ai-adventure-profile';
+      const profileKey = 'ai-experience-profile';
       let profile;
       try {
-        profile = JSON.parse(localStorage.getItem(profileKey) || 'null') || { level: 1, totalExp: 0, gamesCleared: 0, clearedGames: [], achievements: [] };
+        profile = JSON.parse(localStorage.getItem(profileKey) || 'null') || { rank: 0, totalPt: 0, gamesCleared: 0, clearedGames: [], achievements: [] };
       } catch (e) {
-        profile = { level: 1, totalExp: 0, gamesCleared: 0, clearedGames: [], achievements: [] };
+        profile = { rank: 0, totalPt: 0, gamesCleared: 0, clearedGames: [], achievements: [] };
       }
-      profile.level = (profile.level || 1) + 1;
-      profile.totalExp = (profile.totalExp || 0) + 100;
+      profile.rank = (profile.rank || 0) + 1;
+      profile.totalPt = (profile.totalPt || 0) + 100;
       profile.gamesCleared = (profile.gamesCleared || 0) + 1;
       if (!Array.isArray(profile.clearedGames)) profile.clearedGames = [];
       if (!profile.clearedGames.includes('sage')) {
@@ -283,13 +283,15 @@ const ResultCard = (() => {
   border-radius: 8px; padding: 12px 16px;
   margin: 14px 0;
   display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: nowrap; gap: 8px;
 }
 .level-from-to {
   font-family: 'Pixelify Sans', sans-serif;
-  font-size: 1.3rem; color: #e0e0e0;
+  font-size: 1rem; color: #e0e0e0;
+  white-space: nowrap; flex-shrink: 0;
 }
-.level-from-to .arrow { color: #d4a843; margin: 0 6px; }
-.level-from-to .new-level { color: #d4a843; font-size: 1.6rem; }
+.level-from-to .arrow { color: #d4a843; margin: 0 4px; }
+.level-from-to .new-level { color: #d4a843; font-size: 1.2rem; }
 .level-cleared-count {
   font-size: .75rem; color: rgba(255,255,255,.45);
   text-align: right; line-height: 1.5;
@@ -342,21 +344,21 @@ const ResultCard = (() => {
       overlay.id = 'clear-overlay';
       overlay.innerHTML = `
         <div id="level-up-flash">
-          <div class="lvup-text-main">LEVEL UP!</div>
-          <div class="lvup-text-sub">Lv ${lvFrom}  →  Lv ${lvTo}</div>
+          <div class="lvup-text-main">RANK UP!</div>
+          <div class="lvup-text-sub">Rank ${lvFrom}  →  Rank ${lvTo}</div>
         </div>
         <div id="quest-clear-banner">
-          <div class="banner-area-name">🏰 魔導師の塔 クリア</div>
+          <div class="banner-area-name">${gameName} クリア</div>
           <div class="banner-quest-clear" id="rc-quest-clear-text"></div>
           <div class="banner-line"></div>
         </div>
         <div id="exp-section">
-          <div class="exp-label">— 経験値を獲得した —</div>
-          <div class="exp-gain-num" id="rc-exp-counter">+0 EXP</div>
+          <div class="exp-label">— 体験ptを獲得 —</div>
+          <div class="exp-gain-num" id="rc-exp-counter">体験pt +0</div>
           <div class="level-bar-wrap">
-            <span class="rc-level-label">Lv ${lvFrom}</span>
+            <span class="rc-level-label">Rank ${lvFrom}</span>
             <div class="level-bar-bg"><div class="level-bar-fill" id="rc-level-bar-fill"></div></div>
-            <span class="rc-level-label">Lv ${lvTo}</span>
+            <span class="rc-level-label">Rank ${lvTo}</span>
           </div>
         </div>
       `;
@@ -369,20 +371,20 @@ const ResultCard = (() => {
           <span class="card-deco tl">✦</span><span class="card-deco tr">✦</span>
           <span class="card-deco bl">✦</span><span class="card-deco br">✦</span>
           <div class="card-header">
-            <span class="card-area-badge">QUEST CLEAR</span>
-            <span class="card-title">🏰 魔導師の塔</span>
+            <span class="card-area-badge">COMPLETE</span>
+            <span class="card-title">${gameName}</span>
           </div>
           <div class="card-level-section">
-            <div class="level-from-to">Lv ${lvFrom} <span class="arrow">→</span> <span class="new-level">Lv ${lvTo}</span></div>
-            <div class="level-cleared-count">クリア済み<br><span class="cleared-num">${clearedCount}</span> / 5 冒険</div>
+            <div class="level-from-to">Rank ${lvFrom} <span class="arrow">→</span> <span class="new-level">Rank ${lvTo}</span></div>
+            <div class="level-cleared-count">クリア済み<br><span class="cleared-num">${clearedCount}</span> / 6 体験</div>
           </div>
-          <div class="result-row"><span class="result-label">魔導師</span><span class="result-value">${params.sageName} ${params.sageIcon}</span></div>
+          <div class="result-row"><span class="result-label">偉人</span><span class="result-value">${params.sageName} ${params.sageIcon}</span></div>
           <div class="result-row"><span class="result-label">問いの型</span><span class="result-value">${params.questionType}</span></div>
           <div class="result-row"><span class="result-label">対話の深さ</span><span class="result-value">${params.dialogueCount} 回</span></div>
           <div class="result-row"><span class="result-label">達成日時</span><span class="result-value">${dateStr}</span></div>
           <div class="btn-group">
-            <button class="btn-primary" id="rc-portal-btn">⚔️ ポータルに戻る</button>
-            <button class="btn-secondary" id="rc-replay-btn">もう一度この冒険をする</button>
+            <button class="btn-primary" id="rc-portal-btn">🏠 トップに戻る</button>
+            <button class="btn-secondary" id="rc-replay-btn">もう一度体験する</button>
           </div>
         </div>
       `;
@@ -413,11 +415,11 @@ const ResultCard = (() => {
       // 0ms: オーバーレイ active化
       document.getElementById('clear-overlay').classList.add('active');
 
-      // 300ms: QUEST CLEARバナー visible（文字が1つずつ char-glow、60ms間隔）
+      // 300ms: COMPLETE!バナー visible（文字が1つずつ char-glow、60ms間隔）[B1]
       setTimeout(() => {
         const wrap = document.getElementById('rc-quest-clear-text');
         wrap.innerHTML = '';
-        [...'QUEST CLEAR'].forEach((ch, i) => {
+        [...'COMPLETE!'].forEach((ch, i) => {
           const s = document.createElement('span');
           s.className = 'char';
           s.textContent = ch === ' ' ? '\u00A0' : ch;
@@ -427,7 +429,7 @@ const ResultCard = (() => {
         document.getElementById('quest-clear-banner').classList.add('visible');
       }, 300);
 
-      // 1000ms: EXP獲得 visible + カウントアップ(0→100, 800ms) + レベルバー(200ms後に width:100%)
+      // 1000ms: 体験pt獲得 visible + カウントアップ(0→100, 800ms) + レベルバー(200ms後に width:100%) [B2]
       setTimeout(() => {
         document.getElementById('exp-section').classList.add('visible');
         const el = document.getElementById('rc-exp-counter');
@@ -436,7 +438,7 @@ const ResultCard = (() => {
         const inc = target / (800 / 16);
         const t = setInterval(() => {
           v = Math.min(v + inc, target);
-          el.textContent = '+' + Math.floor(v) + ' EXP';
+          el.textContent = '体験pt +' + Math.floor(v);
           if (v >= target) clearInterval(t);
         }, 16);
         setTimeout(() => {
@@ -444,18 +446,18 @@ const ResultCard = (() => {
         }, 200);
       }, 1000);
 
-      // 2000ms: LEVEL UPフラッシュ active（700ms後にremove）
+      // 2000ms: RANK UPフラッシュ active（700ms後にremove）[B3]
       setTimeout(() => {
         const f = document.getElementById('level-up-flash');
         f.classList.add('active');
         setTimeout(() => f.classList.remove('active'), 700);
       }, 2000);
 
-      // 2200ms: Wave1
-      setTimeout(() => { createParticleBurst(50, 42, 22); }, 2200);
+      // 2200ms: Wave1（30粒）[B4]
+      setTimeout(() => { createParticleBurst(50, 42, 30); }, 2200);
 
-      // 2550ms: Wave2
-      setTimeout(() => { createParticleBurst(50, 42, 14); }, 2550);
+      // 2550ms: Wave2（20粒）[B4]
+      setTimeout(() => { createParticleBurst(50, 42, 20); }, 2550);
 
       // 3400ms: オーバーレイ非active → 結果カード visible
       setTimeout(() => {
