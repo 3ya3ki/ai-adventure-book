@@ -1182,6 +1182,10 @@ const DoubtMirage = (() => {
 
   function init(container) {
     dmState.container = container;
+    // #app（偉人ゲーム用 100vh div）を非表示にして上部空白を防ぐ
+    const appEl = document.getElementById('app');
+    if (appEl) appEl.style.display = 'none';
+    window.scrollTo(0, 0);
     const root = document.createElement('div');
     root.id = 'dm-root';
     root.className = 'dm-bg';
@@ -1195,6 +1199,9 @@ const DoubtMirage = (() => {
     if (root) root.remove();
     const flash = document.getElementById('dm-flash');
     if (flash) flash.remove();
+    // #app を復元
+    const appEl = document.getElementById('app');
+    if (appEl) appEl.style.display = '';
     reset();
   }
 
