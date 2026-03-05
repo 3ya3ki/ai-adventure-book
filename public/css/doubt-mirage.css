@@ -1,0 +1,613 @@
+/* ============================================================
+   doubt-mirage.css — ウソつきAI 固有スタイル
+   AI冒険の書 — Doubt Mirage ゲーム
+   クラスは全て dm- プレフィックス
+   ============================================================ */
+
+/* ── Google Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap');
+
+/* ============================================================
+   CSS変数（DoubtMirage専用）
+   ============================================================ */
+:root {
+  --dm-red-primary:   #dc2626;
+  --dm-red-light:     #f87171;
+  --dm-red-dark:      #991b1b;
+  --dm-red-glow:      rgba(220, 38, 38, 0.3);
+  --dm-red-subtle:    rgba(220, 38, 38, 0.08);
+  --dm-orange:        #f97316;
+  --dm-green:         #22c55e;
+  --dm-green-glow:    rgba(34, 197, 94, 0.3);
+  --dm-bg:            #0a0a0f;
+  --dm-card-bg:       rgba(255, 255, 255, 0.04);
+  --dm-card-border:   rgba(255, 255, 255, 0.08);
+  --dm-text:          #f1f5f9;
+  --dm-text-muted:    rgba(241, 245, 249, 0.6);
+  --dm-text-dim:      rgba(241, 245, 249, 0.4);
+}
+
+/* ============================================================
+   レイアウト・背景
+   ============================================================ */
+.dm-bg {
+  min-height: 100vh;
+  background: var(--dm-bg);
+  color: var(--dm-text);
+  font-family: 'Noto Sans JP', 'IBM Plex Sans', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.dm-bg::before {
+  content: '';
+  position: fixed;
+  top: -30%;
+  left: -20%;
+  width: 140%;
+  height: 160%;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(220, 38, 38, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(248, 113, 113, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* スクロールバー */
+.dm-bg::-webkit-scrollbar        { width: 6px; }
+.dm-bg::-webkit-scrollbar-track  { background: transparent; }
+.dm-bg::-webkit-scrollbar-thumb  { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
+
+.dm-container {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* スティッキーヘッダー（出題画面） */
+.dm-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10, 10, 15, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--dm-card-border);
+  padding: 12px 16px;
+}
+
+/* 固定フッター（出題/判定画面） */
+.dm-fixed-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--dm-card-border);
+  padding: 16px;
+}
+
+/* フッターがある画面のコンテンツに下余白 */
+.dm-has-footer {
+  padding-bottom: 100px;
+}
+
+/* ============================================================
+   共有コンポーネント — アイコン
+   ============================================================ */
+.dm-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--dm-red-primary), var(--dm-red-dark));
+  box-shadow: 0 0 20px var(--dm-red-glow);
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.dm-icon-sm {
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+}
+
+.dm-icon-lg {
+  width: 64px;
+  height: 64px;
+  font-size: 32px;
+}
+
+.dm-icon-animate {
+  animation: dm-float 3s ease-in-out infinite;
+}
+
+/* ============================================================
+   共有コンポーネント — 台詞バブル
+   ============================================================ */
+.dm-bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--dm-card-bg);
+  border: 1px solid var(--dm-card-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.dm-bubble-text {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--dm-text);
+  flex: 1;
+}
+
+/* タイプライターカーソル */
+.dm-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--dm-red-light);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: dm-blink 1s step-end infinite;
+}
+
+/* ============================================================
+   ボタン
+   ============================================================ */
+.dm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out, transform 200ms ease-out, opacity 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  width: 100%;
+}
+
+.dm-btn:active {
+  transform: scale(0.97);
+  transition-duration: 100ms;
+}
+
+.dm-btn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.dm-btn-primary {
+  background: linear-gradient(135deg, var(--dm-red-primary), var(--dm-red-dark));
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.25);
+}
+
+.dm-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e53935, var(--dm-red-primary));
+  transform: scale(1.03);
+}
+
+.dm-btn-secondary {
+  background: transparent;
+  color: var(--dm-text);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.dm-btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+  transform: scale(1.03);
+}
+
+.dm-btn-ghost {
+  background: transparent;
+  color: var(--dm-text-muted);
+  border: none;
+  padding: 8px 16px;
+}
+
+.dm-btn-ghost:hover:not(:disabled) {
+  color: var(--dm-text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dm-btn-sm {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+/* ============================================================
+   カード — 難易度カード
+   ============================================================ */
+.dm-diff-card {
+  background: var(--dm-card-bg);
+  border: 1px solid var(--dm-card-border);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: background 200ms ease, border-color 200ms ease, transform 200ms ease;
+  margin-bottom: 12px;
+}
+
+.dm-diff-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateY(-1px);
+}
+
+.dm-diff-card.dm-selected {
+  border-color: var(--dm-red-primary);
+  background: var(--dm-red-subtle);
+  box-shadow: 0 0 0 1px var(--dm-red-primary), inset 0 0 20px rgba(220, 38, 38, 0.05);
+}
+
+/* ============================================================
+   カード — ジャンルカード（2列グリッド）
+   ============================================================ */
+.dm-genre-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.dm-genre-card {
+  background: var(--dm-card-bg);
+  border: 1px solid var(--dm-card-border);
+  border-radius: 10px;
+  padding: 16px 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 200ms ease, border-color 200ms ease, transform 200ms ease;
+}
+
+.dm-genre-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateY(-1px);
+}
+
+.dm-genre-card.dm-selected {
+  border-color: var(--dm-red-primary);
+  background: var(--dm-red-subtle);
+  box-shadow: 0 0 0 1px var(--dm-red-primary);
+}
+
+/* ============================================================
+   カード — 説明文カード（出題画面）
+   ============================================================ */
+.dm-stmt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dm-stmt-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--dm-card-bg);
+  border: 1px solid var(--dm-card-border);
+  border-left: 3px solid transparent;
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 200ms ease, border-color 250ms ease-out, box-shadow 250ms ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dm-stmt-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dm-stmt-card.dm-selected {
+  border-left-color: var(--dm-red-primary);
+  background: linear-gradient(90deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.03) 100%);
+  box-shadow: inset 0 0 20px rgba(220, 38, 38, 0.06);
+}
+
+.dm-stmt-card-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: background 250ms ease-out;
+}
+
+.dm-stmt-card.dm-selected .dm-stmt-card-num {
+  background: var(--dm-red-primary);
+}
+
+.dm-stmt-card-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--dm-text);
+}
+
+/* ============================================================
+   カード — 判定解説カード
+   ============================================================ */
+.dm-explain-card {
+  background: var(--dm-card-bg);
+  border: 1px solid var(--dm-card-border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 12px;
+}
+
+.dm-explain-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+/* 嘘パターンバッジ */
+.dm-pattern-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: var(--dm-red-light);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ============================================================
+   タイマー
+   ============================================================ */
+.dm-timer {
+  font-family: 'IBM Plex Sans', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  transition: color 300ms ease;
+}
+
+.dm-timer-normal   { color: var(--dm-text); }
+.dm-timer-warning  { color: var(--dm-orange); }
+.dm-timer-critical {
+  color: var(--dm-red-light);
+  animation: dm-pulse 0.8s ease-in-out infinite;
+}
+
+/* ============================================================
+   進捗バー
+   ============================================================ */
+.dm-progress-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.dm-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--dm-red-primary), var(--dm-red-light));
+  transition: width 300ms ease;
+}
+
+/* ============================================================
+   スコア / コンボ
+   ============================================================ */
+.dm-combo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dm-orange);
+  animation: dm-combo-in 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================================
+   結果画面
+   ============================================================ */
+.dm-result-rank {
+  display: inline-block;
+  animation: dm-banner-in 600ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.dm-result-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.dm-result-stat {
+  background: var(--dm-card-bg);
+  border: 1px solid var(--dm-card-border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+
+.dm-result-stat-label {
+  font-size: 12px;
+  color: var(--dm-text-muted);
+  margin-bottom: 6px;
+}
+
+.dm-result-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dm-text);
+  font-family: 'IBM Plex Sans', monospace;
+}
+
+/* ============================================================
+   FlashOverlay（正解/不正解フラッシュ）
+   ============================================================ */
+.dm-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.dm-flash-correct {
+  background: rgba(34, 197, 94, 0.18);
+  backdrop-filter: blur(4px);
+}
+
+.dm-flash-wrong {
+  background: rgba(220, 38, 38, 0.18);
+  backdrop-filter: blur(4px);
+}
+
+.dm-flash-icon {
+  font-size: 72px;
+  line-height: 1;
+  animation: dm-combo-in 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dm-flash-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  animation: dm-fade-in-up 300ms ease-out;
+}
+
+.dm-flash-score {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  animation: dm-fade-in-up 400ms ease-out;
+}
+
+/* 不正解シェイク（body or .dm-bg に付与） */
+.dm-shake {
+  animation: dm-shake 500ms ease;
+}
+
+/* ============================================================
+   フェードイン / ステガード
+   ============================================================ */
+.dm-fade-in {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: dm-fade-in-up 400ms ease-out forwards;
+}
+
+/* stagger delays */
+.dm-stagger-0 { animation-delay: 0ms; }
+.dm-stagger-1 { animation-delay: 60ms; }
+.dm-stagger-2 { animation-delay: 120ms; }
+.dm-stagger-3 { animation-delay: 180ms; }
+.dm-stagger-4 { animation-delay: 240ms; }
+.dm-stagger-5 { animation-delay: 300ms; }
+.dm-stagger-6 { animation-delay: 360ms; }
+.dm-stagger-7 { animation-delay: 420ms; }
+.dm-stagger-8 { animation-delay: 480ms; }
+.dm-stagger-9 { animation-delay: 540ms; }
+
+/* ============================================================
+   状態クラス
+   ============================================================ */
+.dm-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ============================================================
+   テキストユーティリティ
+   ============================================================ */
+.dm-text-red    { color: var(--dm-red-light); }
+.dm-text-muted  { color: var(--dm-text-muted); }
+.dm-text-dim    { color: var(--dm-text-dim); }
+.dm-text-sm     { font-size: 13px; }
+.dm-text-xs     { font-size: 11px; }
+
+/* ============================================================
+   セパレーター
+   ============================================================ */
+.dm-divider {
+  border: none;
+  border-top: 1px solid var(--dm-card-border);
+  margin: 16px 0;
+}
+
+/* ============================================================
+   @keyframes
+   ============================================================ */
+
+/* ミラージュアイコン上下フロート */
+@keyframes dm-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* カーソル点滅 */
+@keyframes dm-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* タイマー危険点滅 */
+@keyframes dm-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+/* コンボスケールイン */
+@keyframes dm-combo-in {
+  0%   { transform: scale(0.4); opacity: 0; }
+  70%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 結果ランクバナー登場 */
+@keyframes dm-banner-in {
+  0%   { transform: scale(0.6) translateY(20px); opacity: 0; }
+  70%  { transform: scale(1.08) translateY(-4px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* 不正解シェイク */
+@keyframes dm-shake {
+  0%  { transform: translateX(0); }
+  15% { transform: translateX(-8px); }
+  30% { transform: translateX(8px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(6px); }
+  75% { transform: translateX(-3px); }
+  90% { transform: translateX(3px); }
+  100%{ transform: translateX(0); }
+}
+
+/* フェードイン + スライドアップ */
+@keyframes dm-fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
