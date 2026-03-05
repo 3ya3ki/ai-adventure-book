@@ -1212,12 +1212,13 @@ const DoubtMirage = (() => {
     // ResultCard.show() — 演出後のボタンは goHome() / startGame() がグローバルで処理
     ResultCard.show({
       gameName:      'ウソつきAI',
-      sageName:      'ミラージュ',
-      sageIcon:      '🎭',
-      questionType:  GENRES.find(g => g.id === dmState.genre)?.label || '—',
-      dialogueCount: dmState.totalCount,
       currentLevel:  profile.rank,
       gamesCleared:  profile.clearedGames.length - 1, // 'uso'追加前のカウント
+      details: [
+        { label: '対戦相手', value: 'ミラージュ 🎭' },
+        { label: 'ジャンル',  value: GENRES.find(g => g.id === dmState.genre)?.label || '—' },
+        { label: '正解数',   value: `${dmState.correctCount} / ${dmState.totalCount}` },
+      ],
     });
   }
 

@@ -378,9 +378,11 @@ const ResultCard = (() => {
             <div class="level-from-to">Rank ${lvFrom} <span class="arrow">→</span> <span class="new-level">Rank ${lvTo}</span></div>
             <div class="level-cleared-count">クリア済み<br><span class="cleared-num">${clearedCount}</span> / 6 体験</div>
           </div>
-          <div class="result-row"><span class="result-label">偉人</span><span class="result-value">${params.sageName} ${params.sageIcon}</span></div>
+          ${Array.isArray(params.details)
+            ? params.details.map(d => `<div class="result-row"><span class="result-label">${d.label}</span><span class="result-value">${d.value}</span></div>`).join('')
+            : `<div class="result-row"><span class="result-label">偉人</span><span class="result-value">${params.sageName} ${params.sageIcon}</span></div>
           <div class="result-row"><span class="result-label">問いの型</span><span class="result-value">${params.questionType}</span></div>
-          <div class="result-row"><span class="result-label">対話の深さ</span><span class="result-value">${params.dialogueCount} 回</span></div>
+          <div class="result-row"><span class="result-label">対話の深さ</span><span class="result-value">${params.dialogueCount} 回</span></div>`}
           <div class="result-row"><span class="result-label">達成日時</span><span class="result-value">${dateStr}</span></div>
           <div class="btn-group">
             <button class="btn-primary" id="rc-portal-btn">🏠 トップに戻る</button>
