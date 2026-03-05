@@ -529,9 +529,14 @@ async function initApp() {
 }
 
 /** ポータルからのゲーム起動エントリポイント */
-async function startGameFromPortal(mode) {
-  gameState.mode = mode;
-  console.log(`[script.js] ポータルから起動: mode=${mode}`);
+async function startGameFromPortal(gameId) {
+  if (gameId === 'doubt-mirage') {
+    DoubtMirage.init(document.getElementById('screen-game'));
+    return;
+  }
+  // 既存の偉人ゲーム起動
+  gameState.mode = gameId;
+  console.log(`[script.js] ポータルから起動: mode=${gameId}`);
   await startGame();
 }
 
@@ -561,6 +566,10 @@ function handleTimerEnd() {
 
 /** ホームへ戻る（偉人選択画面に戻す） */
 function goHome() {
+  // DoubtMirage が起動中ならクリーンアップ
+  if (typeof DoubtMirage !== 'undefined' && DoubtMirage.destroy) {
+    DoubtMirage.destroy();
+  }
   // ポータルが有効ならポータルに戻る
   if (typeof Portal !== 'undefined' && Portal.isEnabled()) {
     ModeManager.stopTimer();
