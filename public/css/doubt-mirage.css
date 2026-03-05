@@ -31,12 +31,13 @@
    レイアウト・背景
    ============================================================ */
 .dm-bg {
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: var(--dm-bg);
   color: var(--dm-text);
   font-family: 'Noto Sans JP', 'IBM Plex Sans', sans-serif;
   position: relative;
-  overflow-x: hidden;
 }
 
 .dm-bg::before {

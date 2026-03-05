@@ -39,8 +39,18 @@ const DoubtMirage = (() => {
       combo3: ['3連続！恐れ入ります……', '3連続正解！まさに探偵ですね。'],
       combo5: ['5連続！ここまで見抜かれるとは……', '圧巻のコンボです！'],
     },
-    wrong:      '残念……。騙されてしまいましたね。でも、諦めないでください。',
-    wrongGuess: '惜しい！それは本当のことでした。嘘はもっと巧妙に隠してあります。',
+    wrong: [
+      'ふふ……お見事に引っかかりましたね。私の嘘、そんなに自然でしたか？',
+      'あらら、信じてしまいましたか。……まあ、私の嘘は一級品ですから。',
+      '残念。真実の中に嘘を紛れ込ませるのは、私の得意技でしてね。',
+      '騙されましたね？　でもご安心を——次はもう少し手加減しますよ。……しないかもしれませんが。',
+      'おや、気づけませんでしたか。次こそは私を出し抜いてみせてください。期待していますよ。',
+    ],
+    wrongGuess: [
+      'それ、本当のことですよ？　疑り深いのは良いことですが、疑う方向を間違えましたね。',
+      'ふふ、真実を嘘だと思いましたか。……私が仕掛けた罠は、別のところにありましたよ。',
+      'おっと、それは事実です。嘘は別の場所に隠してありました。もう一度よく考えてみてください。',
+    ],
     resultByRank: {
       S: '完璧です。あなたはもはやミラージュを超えた。この敗北……認めましょう。',
       A: '見事な戦いでした。あなたの眼力には脱帽です。',
@@ -879,7 +889,7 @@ const DoubtMirage = (() => {
     bubbleWrap.style.marginBottom = '20px';
     wrap.appendChild(bubbleWrap);
 
-    const dlgText = lastAnswer.correct ? getCorrectDlg(dmState.combo) : DLG.wrong;
+    const dlgText = lastAnswer.correct ? getCorrectDlg(dmState.combo) : rand(DLG.wrong);
 
     // Explain card
     const card = document.createElement('div');
@@ -1185,6 +1195,8 @@ const DoubtMirage = (() => {
     // #app（偉人ゲーム用 100vh div）を非表示にして上部空白を防ぐ
     const appEl = document.getElementById('app');
     if (appEl) appEl.style.display = 'none';
+    // ページ全体のスクロールを無効化（.dm-bg が自前でスクロール管理）
+    document.body.style.overflowY = 'hidden';
     window.scrollTo(0, 0);
     const root = document.createElement('div');
     root.id = 'dm-root';
@@ -1202,6 +1214,8 @@ const DoubtMirage = (() => {
     // #app を復元
     const appEl = document.getElementById('app');
     if (appEl) appEl.style.display = '';
+    // body スクロールを復元
+    document.body.style.overflowY = '';
     reset();
   }
 
