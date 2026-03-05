@@ -174,3 +174,20 @@ ai-adventure-book/
 - ポータルフォント: IBM Plex Sans + Noto Sans JP（Pixelify Sans は撤廃）
 - ポータル画面: カード型ショーケース（RPG世界観は撤廃）
 - クリア演出: "COMPLETE!" / "体験pt" / "RANK UP!" / 紙吹雪
+
+## Phase 2: ウソつきAI（Doubt Mirage）
+
+### 追加ファイル
+- `public/js/doubt-mirage.js` — ウソつきAIゲーム本体
+- `public/css/doubt-mirage.css` — ウソつきAI固有スタイル
+- `api/doubt-mirage.js` — 問題生成API（Vercel Serverless Function、未実装）
+
+### ルール
+- CSSクラスは全て `dm-` プレフィックス
+- LocalStorageキーは全て `ai-exp-doubt-` プレフィックス（ポータル共有プロフィールは `ai-experience-profile`）
+- 偉人ゲーム関連ファイル（script.js, onboarding.js, chainedFeedback.js 等）は変更禁止
+- ポータル接続は `startGameFromPortal('doubt-mirage')` パターンを使用
+- クリア演出は `ResultCard.show()` を呼び出し（resultCard.js 内部は変更禁止）
+- クリア時は `ai-experience-profile` の `clearedGames` に `'uso'` を追加してポータルの体験数を更新
+- `triggerClearAnimation()` が ResultCard と goHome() をつなぐ接続関数
+- `destroy()` で `#app` の表示・`body.overflowY` を必ず元に戻すこと

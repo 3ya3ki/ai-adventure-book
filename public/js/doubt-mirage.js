@@ -1017,7 +1017,7 @@ const DoubtMirage = (() => {
     // Buttons (revealed after typewriter)
     const btnWrap = document.createElement('div');
     btnWrap.style.cssText = 'display:flex;flex-direction:column;gap:10px;opacity:0;transition:opacity 400ms ease;';
-    const homeBtn = createBtn('🏠 トップに戻る', () => goHomeFromDoubtMirage(), 'secondary', false);
+    const homeBtn = createBtn('🏠 トップに戻る', () => triggerClearAnimation(), 'secondary', false);
     const retryBtn = createBtn('もう一度体験する', () => { reset(); renderScreen('intro'); }, 'primary', false);
     btnWrap.appendChild(homeBtn);
     btnWrap.appendChild(retryBtn);
@@ -1178,12 +1178,47 @@ const DoubtMirage = (() => {
   }
 
   // ════════════════════════════════════════════════════════════
-  // 10. ポータル接続
+  // 10. ポータル接続 + クリア演出
   // ════════════════════════════════════════════════════════════
 
   function goHomeFromDoubtMirage() {
     destroy();
     if (typeof goHome === 'function') goHome();
+  }
+
+  function triggerClearAnimation() {
+    if (typeof ResultCard === 'undefined' || !ResultCard.show) {
+      goHomeFromDoubtMirage();
+      return;
+    }
+
+    // ai-experience-profile に 'uso' クリアを記録（ResultCard.show() より前に実行）
+    const PROFILE_KEY = 'ai-experience-profile';
+    let profile = { rank: 0, totalPt: 0, gamesCleared: 0, clearedGames: [], achievements: [] };
+    try {
+      profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null') || profile;
+    } catch (e) { /* use default */ }
+    if (!Array.isArray(profile.clearedGames)) profile.clearedGames = [];
+    if (!profile.clearedGames.includes('uso')) {
+      profile.clearedGames.push('uso');
+    }
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch (e) { /* ignore */ }
+
+    // Portal の体験記録も更新
+    if (typeof Portal !== 'undefined' && Portal.refreshProfile) {
+      Portal.refreshProfile();
+    }
+
+    // ResultCard.show() — 演出後のボタンは goHome() / startGame() がグローバルで処理
+    ResultCard.show({
+      gameName:      'ウソつきAI',
+      sageName:      'ミラージュ',
+      sageIcon:      '🎭',
+      questionType:  GENRES.find(g => g.id === dmState.genre)?.label || '—',
+      dialogueCount: dmState.totalCount,
+      currentLevel:  profile.rank,
+      gamesCleared:  profile.clearedGames.length - 1, // 'uso'追加前のカウント
+    });
   }
 
   // ════════════════════════════════════════════════════════════
