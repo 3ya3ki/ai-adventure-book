@@ -13,7 +13,7 @@ const GAME_CONFIG = {
   // 展示会モード設定
   EXHIBITION: {
     sageCount: 5,
-    timeLimit: 300, // 秒（5分）
+    timeLimit: 180, // 秒（3分）
     label: '展示会モード',
     sages: ['jobs', 'socrates', 'nietzsche', 'ichiro', 'miyazaki'],
   },
