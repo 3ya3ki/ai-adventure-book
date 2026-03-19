@@ -14,7 +14,7 @@
 
 /* ── body テーマ ── */
 body.portal-dark {
-  background: #0f172a;
+  background: #1a1208;
   color: #f1f5f9;
 }
 
@@ -390,7 +390,7 @@ body.portal-light .portal-record-bar-bg {
 .portal-record-bar-fill {
   height: 100%;
   border-radius: 3px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(90deg, #8a5a20, #c4883a);
   transition: width 0.8s ease;
 }
 
@@ -453,7 +453,7 @@ body.portal-light .portal-reset-btn {
 }
 
 body.portal-dark .portal-dialog-box {
-  background: #1e293b;
+  background: #2a1f0e;
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #f1f5f9;
 }

@@ -6,13 +6,13 @@
 /* ── CSS変数（カラーパレット） ── */
 :root {
   /* 背景 */
-  --bg-primary:       #0a0e1a;
-  --bg-secondary:     #111827;
-  --bg-card:          #1a2236;
-  --bg-card-hover:    #1e2940;
+  --bg-primary:       #1a1208;
+  --bg-secondary:     #221609;
+  --bg-card:          #2a1f0e;
+  --bg-card-hover:    #342710;
 
   /* ボーダー */
-  --border-rpg:       #2a3a5c;
+  --border-rpg:       #4a3520;
   --border-gold:      #c8a24e;
 
   /* ゴールド */
@@ -22,12 +22,12 @@
 
   /* テキスト */
   --text-primary:     #e8e0d0;
-  --text-secondary:   #9ca3af;
-  --text-muted:       #6b7280;
+  --text-secondary:   #a09070;
+  --text-muted:       #786050;
 
   /* アクセント */
-  --accent-blue:      #4a7cc9;
-  --accent-cyan:      #38bdf8;
+  --accent-blue:      #c47a30;
+  --accent-cyan:      #e0a84a;
 
   /* ステータス */
   --danger:           #ef4444;
