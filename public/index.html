@@ -3,55 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>6つのAI体験</title>
+  <title>ハルシネーション体験ゲーム</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Project CSS -->
-  <link rel="stylesheet" href="css/rpg-theme.css" />
-  <link rel="stylesheet" href="css/chat-ui.css" />
-  <link rel="stylesheet" href="css/constellation.css" />
-  <link rel="stylesheet" href="css/collection.css" />
   <link rel="stylesheet" href="css/portal.css" />
-  <link rel="stylesheet" href="css/doubt-mirage.css" />
+  <link rel="stylesheet" href="css/trial.css" />
 </head>
 <body>
-<canvas id="pcanvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:999;"></canvas>
-  <!-- Phase 1: ポータル画面 -->
-  <div id="screen-portal" class="screen">
-    <!-- portal.js が動的に構築 -->
-  </div>
+  <!-- Canvas for resultCard.js particle effects -->
+  <canvas id="pcanvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:999;"></canvas>
 
-  <!-- ゲーム画面（既存の #app をラップ） -->
-  <div id="screen-game" class="screen">
-    <button id="back-to-portal" class="back-btn">
-      <span class="back-btn-arrow">←</span>
-      <span>ポータルに戻る</span>
-    </button>
-    <div id="app" class="min-h-screen">
-      <!-- 既存のscript.js/onboarding.jsがここを操作 -->
-    </div>
-  </div>
+  <!-- ポータル画面 -->
+  <div id="screen-portal" class="screen"></div>
+
+  <!-- 裁判ゲーム画面 -->
+  <div id="screen-trial" class="screen"></div>
 
   <!-- Project JS (defer) -->
-  <script src="js/gameConfig.js" defer></script>
   <script src="js/errorHandler.js" defer></script>
-  <script src="js/modeManager.js" defer></script>
-  <script src="js/constellationIcon.js" defer></script>
-  <script src="js/sageProfileLoader.js" defer></script>
-  <script src="js/chainedFeedback.js" defer></script>
-  <script src="js/sageCollection.js" defer></script>
-  <script src="js/onboarding.js" defer></script>
-  <script src="js/doubt-mirage.js" defer></script>
-  <script src="js/portal.js" defer></script>
-  <script src="js/script.js" defer></script>
   <script src="js/resultCard.js" defer></script>
+  <script src="js/portal.js" defer></script>
+  <script src="js/trial.js" defer></script>
 </body>
 </html>
