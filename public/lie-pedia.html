@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>嘘ペディア — Lie-pedia</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&family=Linux+Libertine&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/lie-pedia.css">
+</head>
+<body>
+
+<div class="loading" id="loading">
+  <div class="ld-spinner"></div>
+  <div class="ld-text" id="ldText">ページを読み込んでいます…</div>
+</div>
+
+<!-- INTRO -->
+<div class="screen active" id="screen-intro">
+  <div class="intro-logo">📖</div>
+  <div class="intro-title">嘘ペディア</div>
+  <div class="intro-subtitle">この世界、全部嘘です。</div>
+  <div class="intro-desc">
+    AIが生成する「全部嘘の百科事典」を探索しよう。<br>
+    もっともらしい解説、丁寧な脚注、詳細なデータ。<br>
+    すべてがハルシネーション。<br>
+    リンクをたどるほど、嘘の世界は広がっていく。
+  </div>
+  <button class="intro-btn" onclick="startGame()">探索を始める →</button>
+</div>
+
+<!-- KEYWORD -->
+<div class="screen" id="screen-keyword">
+  <div class="kw-title">何を調べますか？</div>
+  <div class="kw-picks">
+    <button class="kw-pick" onclick="search('ボカロ')">🎵 ボカロ</button>
+    <button class="kw-pick" onclick="search('VTuber')">🎭 VTuber</button>
+    <button class="kw-pick" onclick="search('推し活')">💖 推し活</button>
+  </div>
+  <div class="kw-or">― または自由に入力 ―</div>
+  <div class="kw-row">
+    <input type="text" class="kw-input" id="kwInput" placeholder="キーワードを入力…" maxlength="30">
+    <button class="kw-go" onclick="searchFree()">検索</button>
+  </div>
+</div>
+
+<!-- ARTICLE -->
+<div class="screen" id="screen-article">
+  <div class="wiki-header">
+    <div class="wiki-logo">嘘<span>ペディア</span></div>
+    <div class="wiki-search-bar">
+      <input type="text" class="wiki-search" id="wikiSearch" placeholder="嘘ペディア内を検索">
+      <button class="wiki-search-btn" onclick="searchFromBar()">検索</button>
+    </div>
+    <div class="wiki-timer-bar">
+      探索: <span id="exploreCount">0</span>件 ｜ <span class="timer-val" id="timerVal">8:00</span>
+    </div>
+  </div>
+  <div class="wiki-breadcrumb" id="breadcrumb"></div>
+  <div class="wiki-body">
+    <div class="wiki-main" id="wikiMain"></div>
+    <div class="wiki-sidebar" id="wikiSidebar"></div>
+  </div>
+  <div class="exit-bar">
+    <div class="exit-info">📖 <span id="exitCount">0</span> 件の嘘を探索済み</div>
+    <button class="exit-btn" onclick="newSearch()">新しいキーワード</button>
+    <button class="exit-btn" onclick="endExplore()">探索を終了する</button>
+  </div>
+</div>
+
+<!-- END -->
+<div class="screen" id="screen-end">
+  <div class="end-title">あなたが探索した嘘の世界</div>
+  <div class="end-subtitle">すべてはAIによるハルシネーションでした</div>
+  <div class="end-trail" id="endTrail"></div>
+  <div class="end-note">この中に真実は1つもありません。</div>
+  <div class="end-btns">
+    <button class="intro-btn" onclick="resetGame()">もう一度探索</button>
+    <button class="intro-btn" style="background:transparent;border:1px solid rgba(212,168,67,.3);color:#d4a843;" onclick="goPortal()">トップに戻る</button>
+  </div>
+</div>
+
+<script src="js/lie-pedia.js"></script>
+</body>
+</html>

@@ -35,14 +35,14 @@ const Portal = (() => {
               </div>
               <button class="portal-card-btn" id="portal-btn-trial">開廷する →</button>
             </div>
-            <div class="portal-card portal-card--coming-soon">
+            <div class="portal-card" id="portal-card-liepedia" role="button" tabindex="0">
               <div class="portal-card-icon">📖</div>
               <div class="portal-card-body">
                 <h2 class="portal-card-title">嘘ペディア</h2>
                 <p class="portal-card-catch">この世界、全部嘘です。</p>
-                <p class="portal-card-meta">準備中</p>
+                <p class="portal-card-meta">約8分</p>
               </div>
-              <button class="portal-card-btn portal-card-btn--disabled" disabled>● Coming Soon</button>
+              <button class="portal-card-btn" id="portal-btn-liepedia">探索する →</button>
             </div>
           </div>
         </main>
@@ -58,6 +58,17 @@ const Portal = (() => {
     });
     document.getElementById('portal-card-trial').addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') Portal.navigateToTrial();
+    });
+
+    document.getElementById('portal-btn-liepedia').addEventListener('click', () => {
+      const timerParam = _exhibitionMode ? '?timer=480' : '';
+      window.location.href = 'lie-pedia.html' + timerParam;
+    });
+    document.getElementById('portal-card-liepedia').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        const timerParam = _exhibitionMode ? '?timer=480' : '';
+        window.location.href = 'lie-pedia.html' + timerParam;
+      }
     });
   }
 
