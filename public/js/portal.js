@@ -6,6 +6,38 @@ const Portal = (() => {
   let _inactivityTimer = null;
   const INACTIVITY_MS = 60000;
 
+  // --- Fallback mode (Fixed / Random) ---
+  let _fallbackMode = sessionStorage.getItem('trial-fallback-mode') || 'fixed';
+  let _tapSequence = [];
+  let _tapTimer = null;
+  const EXPECTED_TAP = ['logo', 'trial', 'liepedia'];
+
+  function handleSecretTap(target) {
+    _tapSequence.push(target);
+    clearTimeout(_tapTimer);
+    _tapTimer = setTimeout(() => { _tapSequence = []; }, 3000);
+    if (_tapSequence.length === EXPECTED_TAP.length) {
+      const matched = _tapSequence.every((t, i) => t === EXPECTED_TAP[i]);
+      _tapSequence = [];
+      if (matched) toggleModePanel();
+    }
+  }
+
+  function toggleModePanel() {
+    const panel = document.getElementById('portal-mode-panel');
+    if (panel) panel.classList.toggle('portal-mode-panel--visible');
+  }
+
+  function updateModePanelUI() {
+    const sw = document.getElementById('portal-mode-switch');
+    const desc = document.getElementById('portal-mode-desc');
+    if (!sw || !desc) return;
+    const isRandom = _fallbackMode === 'random';
+    sw.classList.toggle('portal-mode-switch--on', isRandom);
+    sw.setAttribute('aria-pressed', String(isRandom));
+    desc.textContent = isRandom ? 'ランダム: 10テーマからランダム選択' : '固定: サンタ・5秒ルール';
+  }
+
   // --- Screen switching ---
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
@@ -19,7 +51,8 @@ const Portal = (() => {
     if (!el) return;
     el.innerHTML = `
       <div class="portal-wrapper">
-        <header class="portal-header">
+        <header class="portal-header" style="position:relative;">
+          <button id="portal-secret-btn" aria-hidden="true" tabindex="-1" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:default;border:none;background:none;"></button>
           <div class="portal-brand">FoPs × StudyMeter Inc.</div>
           <h1 class="portal-title">ハルシネーション体験ゲーム</h1>
           <p class="portal-tagline">AIは、いい子とは限らない</p>
@@ -51,6 +84,17 @@ const Portal = (() => {
           <p class="portal-footer-event">ニコニコ超会議 2026 — FoPs ブース</p>
         </footer>
       </div>
+      <div id="portal-mode-panel" class="portal-mode-panel">
+        <div class="portal-mode-inner">
+          <div class="portal-mode-title">⚙ 裁判フォールバック設定</div>
+          <div class="portal-mode-row">
+            <span class="portal-mode-opt" id="portal-mode-opt-fixed">Fixed</span>
+            <button id="portal-mode-switch" class="portal-mode-switch" aria-pressed="false"></button>
+            <span class="portal-mode-opt" id="portal-mode-opt-random">Random</span>
+          </div>
+          <div id="portal-mode-desc" class="portal-mode-desc">固定: サンタ・5秒ルール</div>
+        </div>
+      </div>
     `;
 
     document.getElementById('portal-btn-trial').addEventListener('click', () => {
@@ -70,6 +114,24 @@ const Portal = (() => {
         window.location.href = 'lie-pedia.html' + timerParam;
       }
     });
+
+    // --- Secret tap sequence listeners ---
+    document.getElementById('portal-secret-btn').addEventListener('click', () => handleSecretTap('logo'));
+    document.getElementById('portal-card-trial').addEventListener('click', (e) => {
+      if (!e.target.closest('.portal-card-btn')) handleSecretTap('trial');
+    });
+    document.getElementById('portal-card-liepedia').addEventListener('click', (e) => {
+      if (!e.target.closest('.portal-card-btn')) handleSecretTap('liepedia');
+    });
+
+    // --- Mode panel toggle switch ---
+    document.getElementById('portal-mode-switch').addEventListener('click', () => {
+      _fallbackMode = _fallbackMode === 'fixed' ? 'random' : 'fixed';
+      sessionStorage.setItem('trial-fallback-mode', _fallbackMode);
+      updateModePanelUI();
+    });
+
+    updateModePanelUI();
   }
 
   // --- Inactivity (exhibition mode) ---
@@ -106,7 +168,7 @@ const Portal = (() => {
       clearTimeout(_inactivityTimer);
       showScreen('screen-trial');
       if (typeof Trial !== 'undefined') {
-        Trial.init({ exhibitionMode: _exhibitionMode });
+        Trial.init({ exhibitionMode: _exhibitionMode, fallbackMode: _fallbackMode });
       }
       if (_exhibitionMode) resetInactivity();
     },
