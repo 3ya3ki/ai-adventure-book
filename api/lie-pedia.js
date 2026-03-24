@@ -1,8 +1,7 @@
 // api/lie-pedia.js — 嘘ペディア記事生成 Vercel Serverless Function
 // POST /api/lie-pedia
-const { OpenAI } = require('openai');
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -67,19 +66,35 @@ ${contextText}
 ただし完璧な一貫性は不要です。矛盾が生まれても面白い場合はOKです。`;
 
   try {
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const completion = await client.chat.completions.create({
-      model: 'gpt-5.4',
-      temperature: 0.9,
-      max_tokens: 2000,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: `キーワード: ${keyword.trim()}` },
-      ],
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        temperature: 0.9,
+        max_tokens: 2000,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `キーワード: ${keyword.trim()}` },
+        ],
+      }),
     });
 
-    const raw = completion.choices[0].message.content || '';
+    if (response.status === 429) {
+      return res.status(429).json({ error: 'Rate limited', retryAfter: 5 });
+    }
+
+    if (!response.ok) {
+      const errText = await response.text();
+      return res.status(500).json({ error: 'API error', message: errText });
+    }
+
+    const data = await response.json();
+    const raw = data.choices?.[0]?.message?.content || '';
     const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
 
     let article;
@@ -91,10 +106,6 @@ ${contextText}
 
     return res.status(200).json(article);
   } catch (err) {
-    if (err.status === 429) {
-      return res.status(429).json({ error: 'Rate limited', retryAfter: 5 });
-    }
-    console.error('[lie-pedia.js error]', err);
     return res.status(500).json({ error: 'API error', message: err.message });
   }
 }
