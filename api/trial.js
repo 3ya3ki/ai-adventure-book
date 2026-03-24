@@ -54,7 +54,7 @@ module.exports = async (req, res) => {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     try {
       const completion = await client.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-5.4',
         temperature: 0.85,
         max_tokens: 2000,
         response_format: { type: 'json_object' },
