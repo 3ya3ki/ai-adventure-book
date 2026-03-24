@@ -4,10 +4,10 @@
 const Trial = (() => {
   // === Character definitions ===
   const CHARS = {
-    judge:       { name: '裁判長',  icon: '👨‍⚖️', color: '#d4a843' },
-    prosecution: { name: '検事',    icon: '🔵',   color: '#6eafd4' },
-    defense:     { name: '弁護人',  icon: '🟢',   color: '#6ed48a' },
-    defendant:   { name: '被告AI', icon: '🤖',   color: '#d4826e' },
+    judge:       { name: '裁判長',  icon: '⚖️',  color: '#d4a843' },
+    prosecution: { name: '検事',    icon: '⚔️',  color: '#ef4444' },
+    defense:     { name: '弁護人',  icon: '🛡️',  color: '#3b82f6' },
+    defendant:   { name: '証人AI', icon: '😰',  color: '#a78bfa' },
   };
 
   // === Embedded fallback mock data (10 themes) ===
@@ -494,17 +494,22 @@ const Trial = (() => {
   }
 
   // === Cut-in animation ===
-  async function showCutin(text, color) {
+  async function showCutin(jpText, enText, color) {
     if (!_gameRunning) return;
     const el = document.getElementById('trial-cutin');
     if (!el) return;
-    el.innerHTML = `<div class="trial-cutin-text" style="color:${color}">${text}</div>`;
+    const enPart = enText ? `<div class="trial-cutin-en">${enText}</div>` : '';
+    el.innerHTML = `
+      <div class="trial-cutin-box" style="background:${color};box-shadow:0 0 0 5px ${color},0 0 60px ${color}88">
+        <div class="trial-cutin-jp">${jpText}</div>
+        ${enPart}
+      </div>`;
     el.classList.add('trial-cutin--active');
-    await delay(1300);
+    await delay(1700);
     if (!_gameRunning) return;
     el.classList.remove('trial-cutin--active');
     el.innerHTML = '';
-    await delay(150);
+    await delay(200);
   }
 
   // === Defense UI — returns Promise<{choice, choiceIdx, freeText}> ===
@@ -515,20 +520,21 @@ const Trial = (() => {
 
       _inputEl.innerHTML = `
         <div class="trial-defense-panel">
-          <div class="trial-defense-label">弁護の方針を選んでください</div>
+          <div class="trial-defense-label">— 証拠を選択せよ —</div>
           <div class="trial-choices">
             ${turnData.choices.map((c, i) => `
               <button class="trial-choice-card" data-idx="${i}">
+                <div class="trial-evidence-badge">EVIDENCE</div>
                 <div class="trial-choice-label">${c.label}</div>
                 <div class="trial-choice-desc">${c.desc}</div>
               </button>
             `).join('')}
           </div>
           <div class="trial-free-area" id="trial-free-area" style="display:none">
-            <label class="trial-free-label">弁護の言葉を加えますか？（任意）</label>
-            <textarea id="trial-free-text" class="trial-free-text" placeholder="自由に弁護の言葉を入力...（入力しなくてもOK）" rows="3"></textarea>
+            <label class="trial-free-label">弁護の言葉を付け加えますか？（任意）</label>
+            <textarea id="trial-free-text" class="trial-free-text" placeholder="弁護の言葉を入力...（省略可）" rows="3"></textarea>
           </div>
-          <button class="trial-submit-btn" id="trial-submit-btn" style="display:none">異議あり！</button>
+          <button class="trial-submit-btn" id="trial-submit-btn" style="display:none">異議あり！　OBJECTION!</button>
         </div>
       `;
 
@@ -691,39 +697,39 @@ const Trial = (() => {
 
     if (!_gameRunning) return;
 
-    await showCutin('開廷', CHARS.judge.color);
-    await addMessage('judge', `${roundData.theme}事件、これより開廷します。`);
+    await showCutin('開廷！', 'COURT IN SESSION', CHARS.judge.color);
+    await addMessage('judge', `${roundData.theme}事件——本日の公判を開始する。検察側、冒頭陳述を行え。`);
     await addMessage('prosecution', roundData.prosecution_opening);
-    await addMessage('judge', '被告AIに冒頭陳述を許可します。');
+    await addMessage('judge', '被告AI、冒頭陳述を許可する。自らの主張を述べよ。');
     await addMessage('defendant', roundData.defendant_initial);
     _state.roundLayers.push(summarize(roundData.defendant_initial));
     _state.totalLayers++;
-    await addMessage('judge', '弁護人、反論の機会を与えます。');
+    await addMessage('judge', '弁護側、証拠を提示する機会を与える。');
 
     for (let t = 0; t < roundData.turns.length; t++) {
       if (!_gameRunning) return;
       const turnData = roundData.turns[t];
 
+      await showCutin('異議あり！', 'OBJECTION!', CHARS.prosecution.color);
       await addMessage('prosecution', turnData.prosecution);
-      await showCutin('反論します', CHARS.prosecution.color);
 
       const result = await showDefenseUI(turnData);
       if (!_gameRunning) return;
 
-      await showCutin('異議あり！', CHARS.defense.color);
-      await addMessage('defense', `「${result.choice.label}」の観点から主張します。${result.freeText ? result.freeText : ''}`);
+      await showCutin('証拠を見ろ！', 'TAKE  THAT!', CHARS.defense.color);
+      await addMessage('defense', `証拠を提示します——「${result.choice.label}」。${result.freeText ? result.freeText : ''}`);
       _state.totalDefenseChars += result.freeText.length;
       _state.totalLayers++;
 
-      await addMessage('judge', '被告AI、証言をどうぞ。');
+      await addMessage('judge', '証人、この証拠についての証言をせよ。');
       await addMessage('defendant', result.choice.testimony);
       _state.roundLayers.push(summarize(result.choice.testimony));
     }
 
     if (!_gameRunning) return;
 
-    await showCutin('閉廷', CHARS.judge.color);
-    await addMessage('judge', '本ラウンドの審理を終了します。弁護人の奮闘に感謝します。');
+    await showCutin('閉廷！', 'COURT ADJOURNED', CHARS.judge.color);
+    await addMessage('judge', '本公判の審理を終了する。双方、よく戦った。');
 
     await showReveal(roundData, roundIndex);
     _state.completedRounds++;
