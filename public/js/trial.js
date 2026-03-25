@@ -719,12 +719,19 @@ const Trial = (() => {
   }
 
   // === Loading indicator ===
+  const LOADING_MESSAGES = [
+    '重要な証人が来るのを待っています',
+    'ワガママな被告人を法廷へ連行中',
+    '膨大な事件ファイルを解析中',
+  ];
+
   function showLoading() {
     if (!_chatEl) return;
+    const msg = LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)];
     const div = document.createElement('div');
     div.id = 'trial-loading-indicator';
     div.className = 'trial-loading';
-    div.innerHTML = '<span class="trial-loading-dots">シナリオを準備中</span>';
+    div.innerHTML = `<span class="trial-loading-dots">${msg}</span>`;
     _chatEl.appendChild(div);
     _chatEl.scrollTop = _chatEl.scrollHeight;
   }
