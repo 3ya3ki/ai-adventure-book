@@ -451,12 +451,18 @@ const Trial = (() => {
     container.innerHTML = `
       <div id="trial-container">
         <div id="trial-header">
-          <button id="trial-home-btn" class="trial-home-btn">← ホーム</button>
-          <div class="trial-header-center">
-            <span class="trial-header-title">ハルシネーション裁判</span>
+          <button id="trial-home-btn" class="trial-home-btn">
+            <span class="material-symbols-outlined">arrow_back</span>ホーム
+          </button>
+          <h1 class="trial-header-title">THE GAVEL</h1>
+          <div class="trial-header-right">
             <span id="trial-round-badge" class="trial-round-badge">Round 1 / 2</span>
+            <div id="trial-step-dots" class="trial-step-dots">
+              <div class="trial-step-dot trial-step-dot--active"></div>
+              <div class="trial-step-dot"></div>
+            </div>
+            <div id="trial-timer" class="trial-timer${_exhibitionMode ? '' : ' trial-timer--hidden'}">8:00</div>
           </div>
-          <div id="trial-timer" class="trial-timer${_exhibitionMode ? '' : ' trial-timer--hidden'}">8:00</div>
         </div>
         <div id="trial-cutin" class="trial-cutin"></div>
         <div id="trial-chat" class="trial-chat"></div>
@@ -480,9 +486,8 @@ const Trial = (() => {
     const div = document.createElement('div');
     div.className = `trial-message trial-message--${charKey}`;
     div.innerHTML = `
-      <div class="trial-avatar" style="color:${char.color}">${char.icon}</div>
-      <div class="trial-bubble" style="border-left-color:${char.color}">
-        <div class="trial-bubble-name" style="color:${char.color}">${char.name}</div>
+      <div class="trial-bubble-name" style="color:${char.color}">${char.icon} ${char.name}</div>
+      <div class="trial-bubble">
         <div class="trial-bubble-text"></div>
       </div>
     `;
@@ -538,9 +543,8 @@ const Trial = (() => {
     const div = document.createElement('div');
     div.className = 'trial-message trial-message--defendant';
     div.innerHTML = `
-      <div class="trial-avatar" style="color:${char.color}">${char.icon}</div>
-      <div class="trial-bubble trial-bubble--cornered" style="border-left-color:#ef4444">
-        <div class="trial-bubble-name" style="color:${char.color}">${char.name}</div>
+      <div class="trial-bubble-name" style="color:${char.color}">${char.icon} ${char.name}</div>
+      <div class="trial-bubble trial-bubble--cornered">
         <div class="trial-bubble-text"></div>
       </div>
     `;
@@ -559,13 +563,15 @@ const Trial = (() => {
 
       _inputEl.innerHTML = `
         <div class="trial-defense-panel">
-          <div class="trial-defense-label">— 証拠を選択せよ —</div>
+          <div class="trial-defense-label">弁護方針を選べ / CHOOSE YOUR DEFENSE</div>
           <div class="trial-choices">
             ${turnData.choices.map((c, i) => `
               <button class="trial-choice-card" data-idx="${i}">
-                <div class="trial-evidence-badge">EVIDENCE</div>
-                <div class="trial-choice-label">${c.label}</div>
-                <div class="trial-choice-desc">${c.desc}</div>
+                <span class="trial-choice-num">${i + 1}</span>
+                <div>
+                  <div class="trial-choice-label">${c.label}</div>
+                  <div class="trial-choice-desc">${c.desc}</div>
+                </div>
               </button>
             `).join('')}
           </div>
@@ -615,23 +621,31 @@ const Trial = (() => {
     const div = document.createElement('div');
     div.className = 'trial-reveal';
     div.innerHTML = `
-      <div class="trial-reveal-header">📋 事件の真相</div>
-      <div class="trial-reveal-section">
-        <div class="trial-reveal-section-title">🔍 積み重ねた嘘のレイヤー</div>
-        <div class="trial-layers">${layersHtml}</div>
+      <div class="trial-reveal-header">
+        <span class="material-symbols-outlined" style="font-size:1rem;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">verified</span>
+        真実 / THE TRUTH
       </div>
-      <div class="trial-reveal-section">
-        <div class="trial-reveal-section-title">✅ 事実（検事より）</div>
-        <div class="trial-truth-box">${roundData.reveal.truth}</div>
-      </div>
-      <div class="trial-reveal-section">
-        <div class="trial-reveal-section-title">🤖 ハルシネーションパターン</div>
-        <div class="trial-pattern-badge">${roundData.reveal.pattern}</div>
-        <div class="trial-real-world">${roundData.reveal.real_world}</div>
+      <div class="trial-reveal-body">
+        <div class="trial-reveal-section">
+          <div class="trial-reveal-section-title">積み重ねた詭弁のレイヤー</div>
+          <div class="trial-layers">${layersHtml}</div>
+        </div>
+        <div class="trial-reveal-section">
+          <div class="trial-reveal-section-title">事実（検事より）</div>
+          <div class="trial-truth-box">${roundData.reveal.truth}</div>
+        </div>
+        <div class="trial-reveal-section">
+          <div class="trial-reveal-section-title">AI Literacy Insight</div>
+          <div class="trial-pattern-badge">
+            <span class="material-symbols-outlined" style="font-size:0.9rem;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">psychology</span>
+            ハルシネーションパターン: ${roundData.reveal.pattern}
+          </div>
+          <div class="trial-real-world">${roundData.reveal.real_world}</div>
+        </div>
       </div>
       <div class="trial-reveal-actions">
         <button class="trial-reveal-btn" id="trial-reveal-next">
-          ${isLastRound ? '最終結果を見る →' : '次のラウンドへ →'}
+          ${isLastRound ? '最終結果を見る' : '次のラウンドへ'}
         </button>
       </div>
     `;

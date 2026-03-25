@@ -1,25 +1,100 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html class="dark" lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ハルシネーション体験ゲーム</title>
+  <title>ハルシネーション体験ゲーム | THE GAVEL</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary":                   "#f0bd8f",
+            "primary-container":         "#c4956a",
+            "primary-fixed":             "#ffdcbf",
+            "on-primary":                "#482907",
+            "on-primary-container":      "#4e2e0c",
+            "secondary":                 "#adc6ff",
+            "secondary-container":       "#0566d9",
+            "on-secondary":              "#002e6a",
+            "on-secondary-container":    "#e6ecff",
+            "background":                "#16130e",
+            "surface":                   "#16130e",
+            "surface-bright":            "#3d3833",
+            "surface-variant":           "#38342e",
+            "surface-container-lowest":  "#110e09",
+            "surface-container-low":     "#1f1b16",
+            "surface-container":         "#231f1a",
+            "surface-container-high":    "#2d2924",
+            "surface-container-highest": "#38342e",
+            "on-background":             "#eae1d8",
+            "on-surface":                "#eae1d8",
+            "on-surface-variant":        "#d4c3b7",
+            "outline":                   "#9d8e83",
+            "outline-variant":           "#50453b",
+            "inverse-surface":           "#eae1d8",
+            "inverse-primary":           "#7d5630",
+            "error":                     "#ffb4ab",
+            "error-container":           "#93000a",
+          },
+          fontFamily: {
+            "headline": ["Noto Serif JP", "serif"],
+            "body":     ["Plus Jakarta Sans", "sans-serif"],
+            "label":    ["Plus Jakarta Sans", "sans-serif"],
+            "jp":       ["Noto Sans JP", "sans-serif"],
+          },
+          borderRadius: {
+            "DEFAULT": "0px",
+            "lg":      "0px",
+            "xl":      "0px",
+            "full":    "9999px",
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Common UI styles -->
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      vertical-align: middle;
+    }
+    .grain-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9997;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .glass-card {
+      background: rgba(45, 41, 36, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
 
   <!-- Project CSS -->
   <link rel="stylesheet" href="css/portal.css" />
   <link rel="stylesheet" href="css/trial.css" />
 </head>
 <body>
+  <!-- Grain overlay -->
+  <div class="grain-overlay"></div>
+
   <!-- Canvas for resultCard.js particle effects -->
-  <canvas id="pcanvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:999;"></canvas>
+  <canvas id="pcanvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:998;"></canvas>
 
   <!-- ポータル画面 -->
   <div id="screen-portal" class="screen"></div>

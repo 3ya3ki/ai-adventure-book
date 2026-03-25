@@ -53,29 +53,39 @@ const Portal = (() => {
       <div class="portal-wrapper">
         <header class="portal-header" style="position:relative;">
           <button id="portal-secret-btn" aria-hidden="true" tabindex="-1" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:default;border:none;background:none;"></button>
-          <div class="portal-brand">FoPs × StudyMeter Inc.</div>
+          <p class="portal-brand">FoPs × StudyMeter Inc.</p>
           <h1 class="portal-title">ハルシネーション体験ゲーム</h1>
           <p class="portal-tagline">AIは、いい子とは限らない</p>
         </header>
         <main class="portal-main">
           <div class="portal-cards">
             <div class="portal-card" id="portal-card-trial" role="button" tabindex="0">
-              <div class="portal-card-icon">⚖️</div>
+              <div class="portal-card-icon">
+                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">gavel</span>
+              </div>
               <div class="portal-card-body">
                 <h2 class="portal-card-title">ハルシネーション裁判</h2>
-                <p class="portal-card-catch">AIの壮大な嘘を、あなたが弁護する</p>
+                <p class="portal-card-catch">虚実が入り混じるAIの供述を暴き、真実の判決を下せ。あなたの選択が詭弁を裁く。</p>
                 <p class="portal-card-meta">約6〜8分</p>
               </div>
-              <button class="portal-card-btn" id="portal-btn-trial">開廷する →</button>
+              <button class="portal-card-btn" id="portal-btn-trial">
+                ENTER COURTROOM
+                <span class="material-symbols-outlined" style="font-size:1rem">account_balance</span>
+              </button>
             </div>
             <div class="portal-card" id="portal-card-liepedia" role="button" tabindex="0">
-              <div class="portal-card-icon">📖</div>
+              <div class="portal-card-icon portal-card-icon--secondary">
+                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">menu_book</span>
+              </div>
               <div class="portal-card-body">
-                <h2 class="portal-card-title">嘘ペディア</h2>
-                <p class="portal-card-catch">この世界、全部嘘です。</p>
+                <h2 class="portal-card-title">ウソペディア</h2>
+                <p class="portal-card-catch">AIが創り出した「もっともらしい嘘」の百科事典。世界の再定義を目撃せよ。</p>
                 <p class="portal-card-meta">約8分</p>
               </div>
-              <button class="portal-card-btn" id="portal-btn-liepedia">探索する →</button>
+              <button class="portal-card-btn portal-card-btn--secondary" id="portal-btn-liepedia">
+                OPEN ARCHIVES
+                <span class="material-symbols-outlined" style="font-size:1rem">database</span>
+              </button>
             </div>
           </div>
         </main>
