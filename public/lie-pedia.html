@@ -28,19 +28,146 @@
   <button class="intro-btn" onclick="startGame()">探索を始める →</button>
 </div>
 
-<!-- KEYWORD -->
+<!-- KEYWORD (Wikipedia メインページ風) -->
 <div class="screen" id="screen-keyword">
-  <div class="kw-title">何を調べますか？</div>
-  <div class="kw-picks">
-    <button class="kw-pick" onclick="search('ボカロ')">🎵 ボカロ</button>
-    <button class="kw-pick" onclick="search('VTuber')">🎭 VTuber</button>
-    <button class="kw-pick" onclick="search('推し活')">💖 推し活</button>
+
+  <!-- ヘッダー -->
+  <div class="wp-header">
+    <div class="wp-header-left">
+      <div class="wp-logo-mark">📖</div>
+      <div class="wp-logo-wordmark">嘘<span>ペディア</span></div>
+    </div>
+    <div class="wp-header-search">
+      <input type="text" id="kwInput" class="wp-search-input" placeholder="嘘ペディア内を検索" maxlength="30">
+      <button class="wp-search-btn" onclick="searchFree()">検索</button>
+    </div>
+    <div class="wp-header-right">
+      <a class="wp-nav-link" href="#">寄付</a>
+      <a class="wp-nav-link" href="#">ログイン</a>
+    </div>
   </div>
-  <div class="kw-or">― または自由に入力 ―</div>
-  <div class="kw-row">
-    <input type="text" class="kw-input" id="kwInput" placeholder="キーワードを入力…" maxlength="30">
-    <button class="kw-go" onclick="searchFree()">検索</button>
-  </div>
+
+  <!-- ページレイアウト -->
+  <div class="wp-page-layout">
+
+    <!-- サイドバー -->
+    <div class="wp-sidebar">
+      <div class="wp-sidebar-section">
+        <div class="wp-sidebar-heading">ナビゲーション</div>
+        <ul>
+          <li><a href="#">メインページ</a></li>
+          <li><a href="#">最近の出来事</a></li>
+          <li><a href="#" onclick="search('おまかせ'); return false;">おまかせ表示</a></li>
+          <li><a href="#">新規記事</a></li>
+        </ul>
+      </div>
+      <div class="wp-sidebar-section">
+        <div class="wp-sidebar-heading">参加する</div>
+        <ul>
+          <li><a href="#">嘘を書く</a></li>
+          <li><a href="#">嘘を広める</a></li>
+          <li><a href="#">寄付する</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div class="wp-main-content">
+
+      <!-- ウェルカムバナー -->
+      <div class="wp-welcome">
+        <h1 class="wp-welcome-title">嘘ペディアへようこそ</h1>
+        <p class="wp-welcome-sub">嘘ペディアは誰でも<strong>騙される</strong>フリー百科事典です</p>
+        <p class="wp-welcome-count">1,234,567 本の嘘の記事をあなたと</p>
+      </div>
+
+      <!-- 2カラム -->
+      <div class="wp-columns">
+
+        <!-- 左カラム -->
+        <div class="wp-col-left">
+
+          <div class="wp-section">
+            <div class="wp-section-header">📌 選り抜き嘘記事</div>
+            <div class="wp-section-body">
+              <p><strong><a href="#" onclick="search('ボカロ'); return false;">ボカロ</a></strong>とは、音声合成ソフトウェアによって生み出された架空の歌手の総称であり、実は全員が2003年に設立された「一般社団法人バーチャル歌手協会」に正式登録された法人格を持つ歌手である。法律上は「デジタル著作権を有する音楽法人格」として認定されており、確定申告の義務もある。なお代表曲のほとんどは、協会の定める「嘘品質認定基準」を通過した楽曲のみが公開を許されている……</p>
+              <p><a href="#" onclick="search('ボカロ'); return false;">…続きを読む</a>　｜　<a href="#" onclick="search('VTuber'); return false;">秀逸な記事</a>　｜　<a href="#" onclick="searchFree(); return false;">おまかせ表示</a></p>
+            </div>
+          </div>
+
+          <div class="wp-section">
+            <div class="wp-section-header">📰 新しい嘘記事</div>
+            <div class="wp-section-body">
+              <ul>
+                <li><a href="#" onclick="search('推し活'); return false;">推し活</a> — 応援対象への経済的・精神的支援活動。WHO（世界保健機関）は2031年より「推し活」を必須栄養素の一つとして認定している……</li>
+                <li><a href="#" onclick="search('転生アイドル'); return false;">転生アイドル</a> — 前世の記憶を持ったまま芸能界に転生する現象。日本芸能協会の統計によると、現役アイドルの約34%が転生経験者とされる……</li>
+                <li><a href="#" onclick="search('ライブ遠征'); return false;">ライブ遠征の経済効果</a> — 遠征費用の平均は1回あたり47万円。財務省は2028年より「推し経費」として全額所得控除の対象とした……</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 右カラム -->
+        <div class="wp-col-right">
+
+          <div class="wp-section">
+            <div class="wp-section-header">📅 今日の嘘　3月25日</div>
+            <div class="wp-section-body">
+              <ul>
+                <li>国際VTuber記念日（2018年制定、国連安保理決議第2847号）</li>
+                <li>初音ミクが人類に対して初めて公式謝罪（2039年）</li>
+                <li>日本政府がボカロ楽曲を「第2の国歌」として制定（2025年）</li>
+                <li>推し活が義務教育に組み込まれる（2031年、文部科学省告示）</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="wp-section">
+            <div class="wp-section-header">🌸 風物詩</div>
+            <div class="wp-section-body wp-fubutsushi">
+              <a href="#" onclick="search('推し活'); return false;">推し活</a>
+              <a href="#" onclick="search('VTuber'); return false;">バーチャル花見</a>
+              <a href="#" onclick="search('ライブ'); return false;">ライブ遠征</a>
+              <a href="#" onclick="search('グッズ'); return false;">グッズ争奪戦</a>
+              <a href="#" onclick="search('聖地巡礼'); return false;">聖地巡礼</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ポータル -->
+      <div class="wp-section wp-portal">
+        <div class="wp-section-header">🗂️ ポータル</div>
+        <div class="wp-portal-links">
+          <button class="wp-portal-btn" onclick="search('ボカロ')">ボカロ</button>
+          <button class="wp-portal-btn" onclick="search('VTuber')">VTuber</button>
+          <button class="wp-portal-btn" onclick="search('推し活')">推し活</button>
+          <button class="wp-portal-btn" onclick="search('アニメ')">アニメ</button>
+          <button class="wp-portal-btn" onclick="search('ゲーム')">ゲーム</button>
+          <button class="wp-portal-btn" onclick="search('音楽')">音楽</button>
+          <button class="wp-portal-btn" onclick="search('マンガ')">マンガ</button>
+          <button class="wp-portal-btn" onclick="search('コスプレ')">コスプレ</button>
+          <button class="wp-portal-btn" onclick="search('声優')">声優</button>
+          <button class="wp-portal-btn" onclick="search('同人誌')">同人誌</button>
+        </div>
+      </div>
+
+      <!-- 姉妹プロジェクト -->
+      <div class="wp-section wp-sister">
+        <div class="wp-section-header">姉妹プロジェクト</div>
+        <div class="wp-sister-links">
+          <span class="wp-sister-item">📚 嘘ブックス</span>
+          <span class="wp-sister-item">📰 嘘ニュース</span>
+          <span class="wp-sister-item">💬 嘘クォート</span>
+          <span class="wp-sister-item">✈️ 嘘ボヤージュ</span>
+          <span class="wp-sister-item">🗳️ 嘘データ</span>
+        </div>
+      </div>
+
+    </div><!-- /.wp-main-content -->
+  </div><!-- /.wp-page-layout -->
 </div>
 
 <!-- ARTICLE -->

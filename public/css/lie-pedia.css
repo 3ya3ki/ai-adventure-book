@@ -30,7 +30,8 @@ a { color: var(--link); text-decoration: none; }
 a:hover { text-decoration: underline; }
 .screen { display: none !important; }
 .screen.active { display: block !important; }
-#screen-intro.active, #screen-keyword.active, #screen-end.active { display: flex !important; }
+#screen-intro.active, #screen-end.active { display: flex !important; }
+#screen-keyword.active { display: block !important; }
 
 /* ===== INTRO ===== */
 #screen-intro {
@@ -78,46 +79,130 @@ a:hover { text-decoration: underline; }
 }
 .intro-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(212,168,67,.3); }
 
-/* ===== KEYWORD ===== */
-#screen-keyword {
-  min-height: 100vh;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  background: var(--banner-bg);
-  color: var(--banner-text);
-  text-align: center;
-  padding: 2rem;
-  gap: 1.2rem;
+/* ===== KEYWORD (Wikipedia メインページ風) ===== */
+#screen-keyword { background: #f8f9fa; min-height: 100vh; }
+
+/* Header */
+.wp-header {
+  background: #fff;
+  border-bottom: 1px solid #a2a9b1;
+  display: flex; align-items: center;
+  padding: 6px 16px; gap: 12px;
+  position: sticky; top: 0; z-index: 100;
 }
-.kw-title { font-family: var(--ff-serif); font-size: 1.3rem; color: var(--banner-text); }
-.kw-picks { display: flex; gap: .7rem; flex-wrap: wrap; justify-content: center; }
-.kw-pick {
-  padding: .7rem 1.3rem;
-  background: rgba(232,220,200,.08);
-  border: 1px solid rgba(212,168,67,.25);
-  border-radius: 8px;
-  color: var(--banner-accent);
-  font-family: var(--ff-sans); font-size: .95rem; font-weight: 600;
-  cursor: pointer; transition: all .2s;
+.wp-header-left { display: flex; align-items: center; gap: 8px; min-width: 140px; }
+.wp-logo-mark { font-size: 1.8rem; line-height: 1; }
+.wp-logo-wordmark {
+  font-family: 'Linux Libertine', 'Noto Serif JP', serif;
+  font-size: 1.15rem; color: #202122; white-space: nowrap;
 }
-.kw-pick:hover { background: rgba(212,168,67,.12); border-color: var(--banner-accent); transform: translateY(-2px); }
-.kw-or { font-size: .78rem; color: rgba(232,220,200,.4); }
-.kw-row { display: flex; gap: .4rem; max-width: 340px; width: 100%; }
-.kw-input {
-  flex: 1; padding: .6rem .8rem;
-  background: rgba(232,220,200,.06);
-  border: 1px solid rgba(212,168,67,.2);
-  border-radius: 7px;
-  color: var(--banner-text);
-  font-family: var(--ff-sans); font-size: .9rem; outline: none;
+.wp-logo-wordmark span { font-size: .8rem; color: #54595d; }
+.wp-header-search { flex: 1; display: flex; gap: 6px; max-width: 580px; }
+.wp-search-input {
+  flex: 1; padding: 6px 12px;
+  border: 1px solid #a2a9b1; border-radius: 2px;
+  font-family: var(--ff-sans); font-size: .9rem;
+  color: #202122; background: #fff; outline: none;
 }
-.kw-input::placeholder { color: rgba(232,220,200,.3); }
-.kw-input:focus { border-color: var(--banner-accent); }
-.kw-go {
-  padding: .6rem 1rem;
-  background: var(--banner-accent); color: var(--banner-bg);
-  border: none; border-radius: 7px;
-  font-weight: 700; font-family: var(--ff-sans); cursor: pointer;
+.wp-search-input:focus { border-color: #36c; box-shadow: 0 0 0 2px rgba(51,102,204,.12); }
+.wp-search-btn {
+  padding: 6px 14px;
+  background: #f8f9fa; border: 1px solid #a2a9b1; border-radius: 2px;
+  font-family: var(--ff-sans); font-size: .85rem; color: #202122; cursor: pointer;
+}
+.wp-search-btn:hover { background: #e8eaed; }
+.wp-header-right { display: flex; gap: 12px; }
+.wp-nav-link { font-family: var(--ff-sans); font-size: .8rem; color: #0645ad; text-decoration: none; }
+.wp-nav-link:hover { text-decoration: underline; }
+
+/* Page layout */
+.wp-page-layout { display: flex; max-width: 1200px; margin: 0 auto; }
+
+/* Sidebar */
+.wp-sidebar {
+  width: 156px; min-width: 156px;
+  padding: 14px 8px;
+  font-family: var(--ff-sans); font-size: .8rem;
+}
+.wp-sidebar-section { margin-bottom: 14px; }
+.wp-sidebar-heading {
+  font-weight: 700; font-size: .72rem; color: #54595d;
+  text-transform: uppercase; letter-spacing: .4px;
+  margin-bottom: 5px; padding-bottom: 3px;
+  border-bottom: 1px solid #a2a9b1;
+}
+.wp-sidebar ul { list-style: none; padding: 0; }
+.wp-sidebar ul li { margin-bottom: 3px; }
+.wp-sidebar ul li a { color: #0645ad; font-size: .8rem; }
+.wp-sidebar ul li a:hover { text-decoration: underline; }
+
+/* Main content */
+.wp-main-content { flex: 1; padding: 14px 16px; border-left: 1px solid #a2a9b1; min-width: 0; }
+
+/* Welcome */
+.wp-welcome {
+  background: #fff; border: 1px solid #a2a9b1;
+  padding: 14px 20px; margin-bottom: 14px; text-align: center;
+}
+.wp-welcome-title {
+  font-family: 'Linux Libertine', 'Noto Serif JP', serif;
+  font-size: 1.5rem; font-weight: 700; color: #202122; margin-bottom: 5px;
+}
+.wp-welcome-sub { font-family: var(--ff-sans); font-size: .9rem; color: #54595d; margin-bottom: 3px; }
+.wp-welcome-count { font-family: var(--ff-sans); font-size: .82rem; color: #72777d; }
+
+/* 2-column */
+.wp-columns { display: flex; gap: 14px; margin-bottom: 12px; }
+.wp-col-left { flex: 1.3; min-width: 0; }
+.wp-col-right { flex: 1; min-width: 0; }
+
+/* Section */
+.wp-section { background: #fff; border: 1px solid #a2a9b1; margin-bottom: 12px; overflow: hidden; }
+.wp-section-header {
+  background: #cee0f2; border-bottom: 1px solid #a2a9b1;
+  padding: 5px 12px;
+  font-family: var(--ff-sans); font-size: .82rem; font-weight: 700; color: #202122;
+}
+.wp-section-body {
+  padding: 10px 12px;
+  font-family: var(--ff-serif); font-size: .84rem; line-height: 1.65; color: #202122;
+}
+.wp-section-body p { margin-bottom: 7px; }
+.wp-section-body p:last-child { margin-bottom: 0; }
+.wp-section-body ul { padding-left: 1.4em; }
+.wp-section-body ul li { margin-bottom: 5px; }
+.wp-section-body a { color: #0645ad; }
+.wp-section-body a:hover { text-decoration: underline; }
+
+/* 風物詩 */
+.wp-fubutsushi { display: flex; flex-wrap: wrap; gap: 5px; }
+.wp-fubutsushi a {
+  background: #f0e6d3; border: 1px solid #c8a85a;
+  padding: 2px 8px; font-size: .78rem; color: #0645ad; text-decoration: none;
+}
+.wp-fubutsushi a:hover { background: #e0d0b0; text-decoration: underline; }
+
+/* Portal */
+.wp-portal-links { padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 7px; }
+.wp-portal-btn {
+  padding: 4px 12px;
+  background: #f8f9fa; border: 1px solid #a2a9b1;
+  font-family: var(--ff-sans); font-size: .82rem; color: #0645ad; cursor: pointer;
+  transition: background .12s;
+}
+.wp-portal-btn:hover { background: #eaf3fb; border-color: #36c; color: #36c; }
+
+/* Sister projects */
+.wp-sister-links { padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 14px; }
+.wp-sister-item { font-family: var(--ff-sans); font-size: .8rem; color: #54595d; }
+
+/* Mobile */
+@media (max-width: 700px) {
+  .wp-sidebar { display: none; }
+  .wp-main-content { border-left: none; }
+  .wp-columns { flex-direction: column; }
+  .wp-header-right { display: none; }
+  .wp-header-left { min-width: unset; }
 }
 
 /* ===== WIKI ARTICLE ===== */
