@@ -79,7 +79,7 @@ ${contextText}
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-mini',
+        model: 'gpt-4.1',
         temperature: 0.9,
         max_tokens: 4000,
         response_format: { type: 'json_object' },
