@@ -14,18 +14,118 @@
   <div class="ld-text" id="ldText">ページを読み込んでいます…</div>
 </div>
 
-<!-- INTRO -->
+<!-- INTRO (Wikipedia風ランディング) -->
 <div class="screen active" id="screen-intro">
-  <div class="intro-logo">📖</div>
-  <div class="intro-title">嘘ペディア</div>
-  <div class="intro-subtitle">この世界、全部嘘です。</div>
-  <div class="intro-desc">
-    AIが生成する「全部嘘の百科事典」を探索しよう。<br>
-    もっともらしい解説、丁寧な脚注、詳細なデータ。<br>
-    すべてがハルシネーション。<br>
-    リンクをたどるほど、嘘の世界は広がっていく。
+
+  <!-- ヘッダー -->
+  <div class="wp-header">
+    <div class="wp-header-inner">
+      <div class="wp-header-left">
+        <div class="wp-logo-mark">📖</div>
+        <div class="wp-logo-wordmark">嘘<span>ペディア</span></div>
+      </div>
+      <div class="wp-header-search">
+        <input type="text" class="wp-search-input" placeholder="嘘ペディア内を検索" maxlength="30" onkeydown="if(event.key==='Enter') startGame()">
+        <button class="wp-search-btn" onclick="startGame()">検索</button>
+      </div>
+      <div class="wp-header-right">
+        <a class="wp-nav-link" href="#">寄付</a>
+        <a class="wp-nav-link" href="#">ログイン</a>
+      </div>
+    </div>
   </div>
-  <button class="intro-btn" onclick="startGame()">探索を始める →</button>
+
+  <!-- ページレイアウト -->
+  <div class="wp-page-layout">
+
+    <!-- サイドバー -->
+    <div class="wp-sidebar">
+      <div class="wp-sidebar-section">
+        <div class="wp-sidebar-heading">ナビゲーション</div>
+        <ul>
+          <li><a href="#">メインページ</a></li>
+          <li><a href="#">最近の出来事</a></li>
+          <li><a href="#" onclick="startGame(); return false;">おまかせ表示</a></li>
+          <li><a href="#">新規記事</a></li>
+        </ul>
+      </div>
+      <div class="wp-sidebar-section">
+        <div class="wp-sidebar-heading">参加する</div>
+        <ul>
+          <li><a href="#">嘘を書く</a></li>
+          <li><a href="#">嘘を広める</a></li>
+          <li><a href="#">寄付する</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div class="wp-main-content">
+
+      <!-- ウェルカムバナー -->
+      <div class="wp-welcome">
+        <h1 class="wp-welcome-title">嘘ペディアへようこそ</h1>
+        <p class="wp-welcome-sub">嘘ペディアは誰でも<strong>騙される</strong>フリー百科事典です</p>
+        <p class="wp-welcome-count">1,234,567 本の嘘の記事をあなたと</p>
+        <button class="intro-wp-start-btn" onclick="startGame()">探索を始める →</button>
+      </div>
+
+      <!-- 2カラム -->
+      <div class="wp-columns">
+
+        <!-- 左カラム -->
+        <div class="wp-col-left">
+
+          <div class="wp-section">
+            <div class="wp-section-header">📌 選り抜き嘘記事</div>
+            <div class="wp-section-body">
+              <p><strong><a href="#" onclick="search('ボカロ'); return false;">ボカロ</a></strong>とは、音声合成ソフトウェアによって生み出された架空の歌手の総称であり、実は全員が2003年に設立された「一般社団法人バーチャル歌手協会」に正式登録された法人格を持つ歌手である。法律上は「デジタル著作権を有する音楽法人格」として認定されており、確定申告の義務もある……</p>
+              <p><a href="#" onclick="search('ボカロ'); return false;">…続きを読む</a>　｜　<a href="#" onclick="startGame(); return false;">すべての記事</a></p>
+            </div>
+          </div>
+
+          <div class="wp-section">
+            <div class="wp-section-header">ℹ️ 嘘ペディアについて</div>
+            <div class="wp-section-body">
+              <p>嘘ペディアは、AIが自動生成する「全部嘘の百科事典」です。もっともらしい解説、丁寧な脚注、詳細なデータ——すべてがハルシネーションです。</p>
+              <p>リンクをたどるほど、嘘の世界は広がっていきます。どこまで信じてしまうか、体験してみてください。</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 右カラム -->
+        <div class="wp-col-right">
+
+          <div class="wp-section">
+            <div class="wp-section-header">📅 今日の嘘　3月31日</div>
+            <div class="wp-section-body">
+              <ul>
+                <li>国際VTuber記念日（2018年制定、国連安保理決議第2847号）</li>
+                <li>初音ミクが人類に対して初めて公式謝罪（2039年）</li>
+                <li>日本政府がボカロ楽曲を「第2の国歌」として制定（2025年）</li>
+                <li>推し活が義務教育に組み込まれる（2031年、文部科学省告示）</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="wp-section">
+            <div class="wp-section-header">🗂️ ポータル</div>
+            <div class="wp-portal-links">
+              <button class="wp-portal-btn" onclick="search('ボカロ')">ボカロ</button>
+              <button class="wp-portal-btn" onclick="search('VTuber')">VTuber</button>
+              <button class="wp-portal-btn" onclick="search('推し活')">推し活</button>
+              <button class="wp-portal-btn" onclick="search('アニメ')">アニメ</button>
+              <button class="wp-portal-btn" onclick="search('ゲーム')">ゲーム</button>
+              <button class="wp-portal-btn" onclick="search('音楽')">音楽</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /.wp-main-content -->
+  </div><!-- /.wp-page-layout -->
 </div>
 
 <!-- KEYWORD (Wikipedia メインページ風) -->

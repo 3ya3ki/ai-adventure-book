@@ -79,6 +79,32 @@ a:hover { text-decoration: underline; }
 }
 .intro-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(212,168,67,.3); }
 
+/* ===== INTRO v2 (Wikipedia風ランディング) ===== */
+#screen-intro {
+  background: #f8f9fa;
+  color: var(--text);
+  padding: 0;
+  text-align: left;
+  align-items: unset;
+  justify-content: unset;
+  gap: 0;
+}
+#screen-intro.active { display: block !important; }
+.intro-wp-start-btn {
+  margin-top: 10px;
+  padding: 7px 20px;
+  background: #36c;
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+  font-family: var(--ff-sans);
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.intro-wp-start-btn:hover { background: #2a5db0; }
+
 /* ===== KEYWORD (Wikipedia メインページ風) ===== */
 #screen-keyword { background: #f8f9fa; min-height: 100vh; }
 
