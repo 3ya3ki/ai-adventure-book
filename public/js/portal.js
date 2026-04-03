@@ -10,7 +10,7 @@ const Portal = (() => {
   let _fallbackMode = sessionStorage.getItem('trial-fallback-mode') || 'fixed';
   let _tapSequence = [];
   let _tapTimer = null;
-  const EXPECTED_TAP = ['logo', 'trial', 'liepedia'];
+  const EXPECTED_TAP = ['logo', 'trial', 'halucinica'];
 
   function handleSecretTap(target) {
     _tapSequence.push(target);
@@ -73,16 +73,16 @@ const Portal = (() => {
                 <span class="material-symbols-outlined" style="font-size:1rem">account_balance</span>
               </button>
             </div>
-            <div class="portal-card" id="portal-card-liepedia" role="button" tabindex="0">
+            <div class="portal-card" id="portal-card-halucinica" role="button" tabindex="0">
               <div class="portal-card-icon portal-card-icon--secondary">
                 <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">menu_book</span>
               </div>
               <div class="portal-card-body">
-                <h2 class="portal-card-title">ウソペディア</h2>
-                <p class="portal-card-catch">AIが創り出した「もっともらしい嘘」の百科事典。世界の再定義を目撃せよ。</p>
+                <h2 class="portal-card-title">ハルシニカ</h2>
+                <p class="portal-card-catch">AIが創り出した「もっともらしいハルシネーション」の百科事典。世界の再定義を目撃せよ。</p>
                 <p class="portal-card-meta">約8分</p>
               </div>
-              <button class="portal-card-btn portal-card-btn--secondary" id="portal-btn-liepedia">
+              <button class="portal-card-btn portal-card-btn--secondary" id="portal-btn-halucinica">
                 OPEN ARCHIVES
                 <span class="material-symbols-outlined" style="font-size:1rem">database</span>
               </button>
@@ -114,14 +114,14 @@ const Portal = (() => {
       if (e.key === 'Enter' || e.key === ' ') Portal.navigateToTrial();
     });
 
-    document.getElementById('portal-btn-liepedia').addEventListener('click', () => {
+    document.getElementById('portal-btn-halucinica').addEventListener('click', () => {
       const timerParam = _exhibitionMode ? '?timer=480' : '';
-      window.location.href = 'lie-pedia.html' + timerParam;
+      window.location.href = 'halucinica.html' + timerParam;
     });
-    document.getElementById('portal-card-liepedia').addEventListener('keydown', (e) => {
+    document.getElementById('portal-card-halucinica').addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         const timerParam = _exhibitionMode ? '?timer=480' : '';
-        window.location.href = 'lie-pedia.html' + timerParam;
+        window.location.href = 'halucinica.html' + timerParam;
       }
     });
 
@@ -130,8 +130,8 @@ const Portal = (() => {
     document.getElementById('portal-card-trial').addEventListener('click', (e) => {
       if (!e.target.closest('.portal-card-btn')) handleSecretTap('trial');
     });
-    document.getElementById('portal-card-liepedia').addEventListener('click', (e) => {
-      if (!e.target.closest('.portal-card-btn')) handleSecretTap('liepedia');
+    document.getElementById('portal-card-halucinica').addEventListener('click', (e) => {
+      if (!e.target.closest('.portal-card-btn')) handleSecretTap('halucinica');
     });
 
     // --- Mode panel toggle switch ---

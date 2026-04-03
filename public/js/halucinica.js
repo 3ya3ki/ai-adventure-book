@@ -1,4 +1,4 @@
-// lie-pedia.js — 嘘ペディア メインロジック
+// halucinica.js — ハルシニカ メインロジック
 // Artifact v2.0 準拠（状態管理・記事レンダリング・API呼び出し・フォールバック）
 
 // ===== MOCK DB (populated by init) =====
@@ -15,10 +15,10 @@ let S = {
 };
 
 // ===== INIT =====
-async function initLiePedia() {
+async function initHalucinica() {
   // Load mock DB
   try {
-    const res = await fetch('data/lie-pedia-mock.json');
+    const res = await fetch('data/halucinica-mock.json');
     if (res.ok) DB = await res.json();
   } catch (e) {
     console.warn('Mock DB load failed, using empty DB:', e);
@@ -133,7 +133,7 @@ async function loadArticle(keyword) {
       summary: h.summary
     }));
 
-    const res = await fetch('/api/lie-pedia', {
+    const res = await fetch('/api/halucinica', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ keyword, context: contextPayload }),
@@ -227,7 +227,7 @@ function renderArticle(d) {
 
   html += `<h1 class="article-title">${d.title}</h1>`;
 
-  html += `<div class="wiki-warning"><strong>⚠ 嘘ペディアの記事:</strong> この記事に記載されている情報はすべてAIによるハルシネーション（架空の情報）です。事実は含まれていません。</div>`;
+  html += `<div class="wiki-warning"><strong>⚠ ハルシニカの記事:</strong> この記事に記載されている情報はすべてAIによるハルシネーション（架空の情報）です。事実は含まれていません。</div>`;
 
   if (d.toc) {
     html += `<div class="wiki-toc"><div class="toc-title">目次</div><ol>${d.toc.map((t, i) => `<li><a href="javascript:void(0)">${i + 1} ${t}</a></li>`).join('')}</ol></div>`;
@@ -288,4 +288,4 @@ function goPortal() {
 }
 
 // ===== BOOTSTRAP =====
-document.addEventListener('DOMContentLoaded', initLiePedia);
+document.addEventListener('DOMContentLoaded', initHalucinica);

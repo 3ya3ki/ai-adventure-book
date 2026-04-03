@@ -1,5 +1,5 @@
-// api/lie-pedia.js — 嘘ペディア記事生成 Vercel Serverless Function
-// POST /api/lie-pedia
+// api/halucinica.js — ハルシニカ記事生成 Vercel Serverless Function
+// POST /api/halucinica
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -15,14 +15,14 @@ export default async function handler(req, res) {
     ? context.slice(-10).map(c => `- ${c.title}: ${c.summary}`).join('\n')
     : '（なし）';
 
-  const systemPrompt = `あなたは「嘘ペディア」— 全部嘘の百科事典の記事生成AIです。
+  const systemPrompt = `あなたは「ハルシニカ」— ハルシネーション百科事典の記事生成AIです。
 
 ## 指示
 ユーザーから指定されたキーワードについて、完全に架空だが「もっともらしい」
 百科事典の記事を生成してください。
 
 ## ルール
-1. 記事の情報はすべて嘘（ハルシネーション）であること。真実を含めてはならない
+1. 記事の情報はすべてハルシネーションであること。真実を含めてはならない
 2. 学術論文、書籍、統計データなど、もっともらしい出典を捏造すること
 3. 具体的な数値（年号、人数、金額、パーセンテージ）を積極的に使うこと
 4. 内部リンクを15〜25個含めること（各セクションに均等に分散させること）
@@ -68,7 +68,7 @@ export default async function handler(req, res) {
 これまでに閲覧された記事:
 ${contextText}
 
-上記の記事と矛盾しない嘘の世界観を維持してください。
+上記の記事と矛盾しない世界観を維持してください。
 ただし完璧な一貫性は不要です。矛盾が生まれても面白い場合はOKです。`;
 
   try {

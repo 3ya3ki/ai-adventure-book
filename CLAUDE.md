@@ -159,32 +159,32 @@ ResultCard.show({
 ```
 環境変数: `OPENAI_API_KEY`（Vercel環境変数に設定済み）
 
-## 嘘ペディア固有ルール
+## ハルシニカ固有ルール
 
 ### 絶対に守ること
-- lie-pedia.css のデザイン（色、フォント、余白、レイアウト）は Artifact v2.0 と完全一致させること
+- halucinica.css のデザイン（色、フォント、余白、レイアウト）は Artifact v2.0 と完全一致させること
 - 「Wikipedia」「ウィキペディア」の名称・ロゴ・Wikimedia財団への言及は禁止
-- 実在の人物・企業をネガティブに描く嘘記事を生成するプロンプトにしないこと
+- 実在の人物・企業をネガティブに描く記事を生成するプロンプトにしないこと
 - 既存ファイル（script.js, rpg-theme.css, chat-ui.css, constellation.css 等）は変更しないこと
 
-### 新規作成ファイル（Phase B 嘘ペディア）
-- public/lie-pedia.html
-- public/css/lie-pedia.css
-- public/js/lie-pedia.js
-- public/data/lie-pedia-mock.json
-- api/lie-pedia.js
+### 新規作成ファイル（Phase B ハルシニカ）
+- public/halucinica.html
+- public/css/halucinica.css
+- public/js/halucinica.js
+- public/data/halucinica-mock.json
+- api/halucinica.js
 
 ### 技術制約
 - Vanilla JS のみ（React/Next.js 禁止）
 - Google Fonts: Noto Serif JP, Noto Sans JP, Linux Libertine（CDN）
 - OpenAI API: GPT-4o-mini, response_format: json_object, temperature: 0.9
 
-### 嘘ペディア設計
+### ハルシニカ設計
 - 4画面: screen-intro → screen-keyword → screen-article → screen-end
-- `.screen.active` で表示切替（lie-pedia.css固有。portal.cssの `.screen.visible` とは別）
-- API呼び出しフロー: L1キャッシュ → L2 /api/lie-pedia → L3 モックDB → L4 ボカロリダイレクト
+- `.screen.active` で表示切替（halucinica.css固有。portal.cssの `.screen.visible` とは別）
+- API呼び出しフロー: L1キャッシュ → L2 /api/halucinica → L3 モックDB → L4 ボカロリダイレクト
 - S.history に閲覧記事の {title, summary} を保存し、APIにcontextとして送信（直近10件）
 - タイマー: URLパラメータ `?timer=秒数`（0で無効）。デフォルト480秒
 - goPortal() は `window.location.href = 'index.html'` でポータルに戻る
-- ポータルからは `lie-pedia.html` または `lie-pedia.html?timer=480`（展示会モード）へ遷移
+- ポータルからは `halucinica.html` または `halucinica.html?timer=480`（展示会モード）へ遷移
 - モックDB: 9記事（ボカロ/音声合成戦争の歴史/初音ミク現象 + VTuber/バーチャルアイデンティティ論/画面越しの魂問題 + 推し活/推し経済圏/感情資本主義）
