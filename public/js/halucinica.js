@@ -97,7 +97,11 @@ function search(kw) {
 
 function searchFree() {
   const v = document.getElementById('kwInput').value.trim();
-  if (!v) return;
+  if (!v) {
+    const picks = ['ボカロ','VTuber','推し活','アニメ','ゲーム','音楽','マンガ','コスプレ','声優','同人誌','転生アイドル','ライブ遠征','聖地巡礼'];
+    search(picks[Math.floor(Math.random() * picks.length)]);
+    return;
+  }
   if (!S.iv && S.timer > 0) startTimer();
   loadArticle(v);
 }
