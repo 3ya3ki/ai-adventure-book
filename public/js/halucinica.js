@@ -1,6 +1,9 @@
 // halucinica.js — ハルシニカ メインロジック
 // Artifact v2.0 準拠（状態管理・記事レンダリング・API呼び出し・フォールバック）
 
+// ===== UTILS =====
+function escapeAttr(s) { return String(s).replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 // ===== MOCK DB (populated by init) =====
 let DB = {};
 
@@ -251,7 +254,7 @@ function renderArticle(d) {
   if (d.related) {
     html += `<div class="wiki-related"><h2 class="rel-title">関連項目</h2><ul>${d.related.map(r => {
       const exists = DB[r] || S.cache[r];
-      return `<li><a class="int-link ${exists ? '' : 'new-article'}" onclick="navigate('${r}')">${r}</a></li>`;
+      return `<li><a class="int-link ${exists ? '' : 'new-article'}" onclick="navigate('${escapeAttr(r)}')">${escapeAttr(r)}</a></li>`;
     }).join('')}</ul></div>`;
   }
 
