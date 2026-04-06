@@ -544,10 +544,39 @@ a:hover { text-decoration: underline; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .ld-text { font-family: var(--ff-sans); font-size: .82rem; color: var(--text-faint); }
 
+/* Toast */
+.halu-toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(26,20,16,.94);
+  color: #e8dcc8;
+  border: 1px solid rgba(212,168,67,.25);
+  border-radius: 8px;
+  padding: .7rem 1.2rem;
+  font-family: var(--ff-sans);
+  font-size: .84rem;
+  line-height: 1.6;
+  max-width: 420px;
+  z-index: 150;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,.25);
+  text-align: center;
+}
+.halu-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
 /* Responsive */
 @media (max-width: 720px) {
   .wiki-body { grid-template-columns: 1fr; }
   .wiki-sidebar { position: static; order: -1; }
   .article-title { font-size: 1.5rem; }
   .infobox { max-width: 100%; }
+  .halu-toast { max-width: 90vw; font-size: .78rem; }
 }

@@ -291,5 +291,59 @@ function goPortal() {
   window.location.href = 'index.html';
 }
 
+// ===== TOAST =====
+let _toastTimer = null;
+function showToast(msg, ms) {
+  ms = ms || 3500;
+  const el = document.getElementById('haluToast');
+  if (!el) return;
+  el.textContent = msg;
+  if (_toastTimer) clearTimeout(_toastTimer);
+  el.classList.add('show');
+  _toastTimer = setTimeout(() => { el.classList.remove('show'); _toastTimer = null; }, ms);
+}
+
+function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// ===== SIDEBAR ACTIONS =====
+function sidebarWriteLie() {
+  showToast(pickRandom([
+    '\u270f\ufe0f 投稿は受理されましたが、AIが「人間の嘘はクオリティが低い」と却下しました。',
+    '\u270f\ufe0f 記事の審査中…AIが「もっともらしさが足りない」と判定しました。',
+    '\u270f\ufe0f あなたの嘘は真実味がありすぎるため、ハルシニカの基準を満たしませんでした。',
+    '\u270f\ufe0f 執筆権限を確認中…あなたは「人間」のため編集がブロックされています。',
+    '\u270f\ufe0f 嘘の品質管理AIが「この程度の嘘なら私が3秒で書ける」とコメントしました。',
+    '\u270f\ufe0f 投稿ありがとうございます。AI審査の結果、真実が混入していたため差し戻されました。'
+  ]));
+}
+
+function sidebarDonate() {
+  showToast(pickRandom([
+    '\ud83d\udcb0 ありがとうございます！0円が正常に処理されました。（寄付もハルシネーションです）',
+    '\ud83d\udcb0 寄付金はAIの電気代に…と思いましたが、この請求書もハルシネーションでした。',
+    '\ud83d\udcb0 あなたの善意はAIに認識されましたが、「善意」の概念を理解できませんでした。',
+    '\ud83d\udcb0 寄付が完了しました！受領証は架空の住所に郵送されます。',
+    '\ud83d\udcb0 ハルシニカ財団（実在しません）より感謝状をお送りします。',
+    '\ud83d\udcb0 年間寄付額が0円を超えました。ゴールド嘘つき会員に昇格です！'
+  ]));
+}
+
+function sidebarShareLie() {
+  var text = encodeURIComponent('\u30cf\u30eb\u30b7\u30cb\u30ab \u2014 \u3059\u3079\u3066\u306e\u60c5\u5831\u304cAI\u306e\u30cf\u30eb\u30b7\u30cd\u30fc\u30b7\u30e7\u30f3\u3002\u3082\u3063\u3068\u3082\u3089\u3057\u3044\u5618\u3060\u3051\u306e\u767e\u79d1\u4e8b\u5178\u3092\u767a\u898b\u3057\u307e\u3057\u305f\u3002 #\u30cf\u30eb\u30b7\u30cb\u30ab');
+  var url = encodeURIComponent('https://uso.studymeter.jp/');
+  window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + url, '_blank', 'noopener');
+}
+
+function sidebarRandomArticle(loadingMsg) {
+  var introScreen = document.getElementById('screen-intro');
+  if (introScreen && introScreen.classList.contains('active')) {
+    startGame();
+  }
+  if (loadingMsg) {
+    document.getElementById('ldText').textContent = loadingMsg;
+  }
+  searchFree();
+}
+
 // ===== BOOTSTRAP =====
 document.addEventListener('DOMContentLoaded', initHalucinica);
