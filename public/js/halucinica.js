@@ -342,7 +342,7 @@ function sidebarRandomArticle(loadingMsg) {
   if (loadingMsg) {
     document.getElementById('ldText').textContent = loadingMsg;
   }
-  var picks = ['ボカロ','VTuber','推し活','アニメ','ゲーム','音楽','マンガ','コスプレ','声優','同人誌','転生アイドル','ライブ遠征','聖地巡礼'];
+  var picks = ['ボカロ','VTuber','推し活','アニメ','ゲーム','マンガ','コスプレ','声優','同人誌'];
   search(pickRandom(picks));
 }
 
