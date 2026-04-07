@@ -1,5 +1,8 @@
 // halucinica.js — ハルシニカ メインロジック
-// Artifact v2.0 準拠（状態管理・記事レンダリング・API呼び出し・フォールバック）
+// Press Release Edition v3.0
+// Phase 1: セキュリティ修正 (XSS, alert→toast, console.warn削除, clipboard catch)
+// Phase 2: モバイル対応 (ボトムナビ, タップターゲット)
+// Phase 3: SNSシェア強化 (LINE, 記事内シェア)
 
 // ===== UTILS =====
 function escapeAttr(s) { return String(s).replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -22,9 +25,11 @@ async function initHalucinica() {
   // Load mock DB
   try {
     const res = await fetch('data/halucinica-mock.json');
-    if (res.ok) DB = await res.json();
+    if (res.ok) {
+      DB = sanitizeMockDB(await res.json());
+    }
   } catch (e) {
-    console.warn('Mock DB load failed, using empty DB:', e);
+    // Mock DB load failed, using empty DB
   }
 
   // Handle timer URL param
@@ -35,13 +40,53 @@ async function initHalucinica() {
     if (!isNaN(t) && t >= 0) S.timer = t;
   }
 
+  // Set dynamic date for "今日のハルシネーション"
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+  const dateStr = `📅 今日のハルシネーション　${month}月${day}日`;
+  const introDate = document.getElementById('todayHallucinationIntro');
+  const kwDate = document.getElementById('todayHallucinationKw');
+  if (introDate) introDate.textContent = dateStr;
+  if (kwDate) kwDate.textContent = dateStr;
+
   // Enter key handlers
-  document.getElementById('kwInput').addEventListener('keypress', e => {
+  const kwInput = document.getElementById('kwInput');
+  if (kwInput) kwInput.addEventListener('keypress', e => {
     if (e.key === 'Enter') searchFree();
   });
-  document.getElementById('wikiSearch').addEventListener('keypress', e => {
+  const wikiSearch = document.getElementById('wikiSearch');
+  if (wikiSearch) wikiSearch.addEventListener('keypress', e => {
     if (e.key === 'Enter') searchFromBar();
   });
+
+  // Event delegation for data-navigate links (XSS-safe)
+  const wikiMain = document.getElementById('wikiMain');
+  if (wikiMain) {
+    wikiMain.addEventListener('click', function(e) {
+      const a = e.target.closest('a[data-navigate]');
+      if (a) { e.preventDefault(); navigate(a.dataset.navigate); }
+    });
+  }
+}
+
+// ===== MOCK DB SANITIZER (XSS対策: onclick → data-navigate に変換) =====
+function sanitizeMockDB(db) {
+  const re = /onclick="navigate\('([^']+)'\)"/g;
+  for (const key of Object.keys(db)) {
+    const item = db[key];
+    if (item.sections) {
+      item.sections = item.sections.map(s => ({
+        ...s,
+        content: (s.content || '').replace(re, 'data-navigate="$1"'),
+        subsections: (s.subsections || []).map(sub => ({
+          ...sub,
+          content: (sub.content || '').replace(re, 'data-navigate="$1"')
+        }))
+      }));
+    }
+  }
+  return db;
 }
 
 // ===== SCREEN SWITCH =====
@@ -49,6 +94,11 @@ function sw(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
+  // モバイルボトムナビの表示制御（記事画面では非表示）
+  const mbn = document.getElementById('mobileBottomNav');
+  if (mbn) {
+    mbn.style.display = (id === 'screen-article') ? 'none' : '';
+  }
 }
 
 function fmt(s) {
@@ -126,8 +176,15 @@ function navigate(kw) { loadArticle(kw); }
 async function loadArticle(keyword) {
   showLoading(`「${keyword}」を検索中…`);
 
+  // Safety timeout for loading (toast instead of alert)
+  const loadingTimeout = setTimeout(() => {
+    hideLoading();
+    showToast('⏱ 記事の生成に時間がかかっています。もう一度お試しください。', 5000);
+  }, 15000);
+
   // L1: In-memory cache
   if (S.cache[keyword]) {
+    clearTimeout(loadingTimeout);
     hideLoading();
     _displayArticle(keyword, S.cache[keyword]);
     return;
@@ -150,17 +207,19 @@ async function loadArticle(keyword) {
       const data = await res.json();
       if (data && data.title) {
         S.cache[keyword] = data;
+        clearTimeout(loadingTimeout);
         hideLoading();
         _displayArticle(keyword, data);
         return;
       }
     }
   } catch (e) {
-    // API failed, fall through to mock DB
+    // API call failed, fall through to mock DB
   }
 
   // L3: Mock DB
   await new Promise(r => setTimeout(r, 400 + Math.random() * 400));
+  clearTimeout(loadingTimeout);
   hideLoading();
 
   const mockData = DB[keyword];
@@ -168,12 +227,13 @@ async function loadArticle(keyword) {
     S.cache[keyword] = mockData;
     _displayArticle(keyword, mockData);
   } else {
-    // L4: Redirect to ボカロ
+    // L4: フォールバック（関連記事を表示）
     const fallbackKw = 'ボカロ';
     const fallback = DB[fallbackKw] || null;
     S.explored++;
     S.trail.push(keyword + '（リダイレクト）');
     S.history.push({ title: keyword, summary: '（リダイレクト）' });
+    showToast(`「${keyword}」の記事はまだ存在しません。関連する記事を表示します。`, 4000);
     if (fallback) {
       S.cache[fallbackKw] = fallback;
       renderArticle(fallback);
@@ -196,6 +256,7 @@ function _displayArticle(keyword, data) {
   S.history.push({ title: data.title || keyword, summary });
   renderArticle(data);
   _updateCounters();
+  _updateArticleShareButtons(data.title || keyword);
   sw('screen-article');
 }
 
@@ -204,7 +265,35 @@ function _updateCounters() {
   document.getElementById('exitCount').textContent = S.explored;
 }
 
-// ===== ARTICLE RENDER (Artifact v2.0 準拠) =====
+// ===== 記事ページのシェアボタン更新 =====
+function _updateArticleShareButtons(title) {
+  const shareText = encodeURIComponent(
+    `「${title}」— ハルシニカで発見した架空の記事。すべてAIのハルシネーションです。 #ハルシニカ`
+  );
+  const shareUrl = encodeURIComponent('https://uso.studymeter.jp/');
+
+  const xBtn = document.getElementById('articleShareX');
+  if (xBtn) {
+    xBtn.onclick = function() {
+      window.open(
+        `https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`,
+        '_blank', 'noopener'
+      );
+    };
+  }
+
+  const lineBtn = document.getElementById('articleShareLine');
+  if (lineBtn) {
+    lineBtn.onclick = function() {
+      window.open(
+        `https://social-plugins.line.me/lineit/share?url=${shareUrl}&text=${shareText}`,
+        '_blank', 'noopener'
+      );
+    };
+  }
+}
+
+// ===== ARTICLE RENDER (data-navigate XSS-safe) =====
 function renderArticle(d) {
   // Breadcrumb
   const bc = document.getElementById('breadcrumb');
@@ -212,7 +301,7 @@ function renderArticle(d) {
     const sep = i < S.trail.length - 1
       ? ' <span style="color:#72777d;margin:0 .2rem;">›</span> '
       : '';
-    return `<span>${t}</span>${sep}`;
+    return `<span>${escapeAttr(t)}</span>${sep}`;
   }).join('');
 
   // Sidebar (infobox)
@@ -221,9 +310,9 @@ function renderArticle(d) {
   if (d.infobox) {
     const ib = d.infobox;
     ibHtml = `<div class="infobox">
-      <div class="infobox-header">${ib.header}</div>
-      <div class="infobox-image">${ib.image}</div>
-      <table>${ib.fields.map(f => `<tr><td>${f[0]}</td><td>${f[1]}</td></tr>`).join('')}</table>
+      <div class="infobox-header">${ib.header || ''}</div>
+      <div class="infobox-image">${ib.image || ''}</div>
+      <table>${(ib.fields || []).map(f => `<tr><td>${f[0] || ''}</td><td>${f[1] || ''}</td></tr>`).join('')}</table>
     </div>`;
   }
   sb.innerHTML = ibHtml;
@@ -232,29 +321,30 @@ function renderArticle(d) {
   const main = document.getElementById('wikiMain');
   let html = '';
 
-  html += `<h1 class="article-title">${d.title}</h1>`;
+  html += `<h1 class="article-title">${escapeAttr(d.title || '')}</h1>`;
 
   html += `<div class="wiki-warning"><strong>⚠ ハルシニカの記事:</strong> この記事に記載されている情報はすべてAIによるハルシネーション（架空の情報）です。事実は含まれていません。</div>`;
 
   if (d.toc) {
-    html += `<div class="wiki-toc"><div class="toc-title">目次</div><ol>${d.toc.map((t, i) => `<li><a href="javascript:void(0)">${i + 1} ${t}</a></li>`).join('')}</ol></div>`;
+    html += `<div class="wiki-toc"><div class="toc-title">目次</div><ol>${d.toc.map((t, i) => `<li><a href="javascript:void(0)">${i + 1} ${escapeAttr(t)}</a></li>`).join('')}</ol></div>`;
   }
 
-  d.sections.forEach(sec => {
-    html += `<div class="wiki-section"><h2 class="wiki-h2">${sec.heading}</h2>`;
+  (d.sections || []).forEach(sec => {
+    html += `<div class="wiki-section"><h2 class="wiki-h2">${escapeAttr(sec.heading || '')}</h2>`;
     if (sec.content) html += sec.content;
     if (sec.subsections) {
       sec.subsections.forEach(sub => {
-        html += `<h3 class="wiki-h3">${sub.heading}</h3>${sub.content}`;
+        html += `<h3 class="wiki-h3">${escapeAttr(sub.heading || '')}</h3>${sub.content || ''}`;
       });
     }
     html += '</div>';
   });
 
   if (d.related) {
+    // XSS-safe: data-navigate + event delegation (see initHalucinica)
     html += `<div class="wiki-related"><h2 class="rel-title">関連項目</h2><ul>${d.related.map(r => {
       const exists = DB[r] || S.cache[r];
-      return `<li><a class="int-link ${exists ? '' : 'new-article'}" onclick="navigate('${escapeAttr(r)}')">${escapeAttr(r)}</a></li>`;
+      return `<li><a class="int-link ${exists ? '' : 'new-article'}" data-navigate="${escapeAttr(r)}" href="javascript:void(0)">${escapeAttr(r)}</a></li>`;
     }).join('')}</ul></div>`;
   }
 
@@ -263,11 +353,11 @@ function renderArticle(d) {
   }
 
   if (d.categories) {
-    html += `<div class="wiki-categories"><span class="cat-label">カテゴリ:</span>${d.categories.map(c => `<a href="javascript:void(0)">${c}</a>`).join(' | ')}</div>`;
+    html += `<div class="wiki-categories"><span class="cat-label">カテゴリ:</span>${d.categories.map(c => `<a href="javascript:void(0)">${escapeAttr(c)}</a>`).join(' | ')}</div>`;
   }
 
   if (d.updated) {
-    html += `<div class="wiki-updated">このページの最終更新日時は ${d.updated} です。</div>`;
+    html += `<div class="wiki-updated">このページの最終更新日時は ${escapeAttr(d.updated)} です。</div>`;
   }
 
   html += '<div style="height:60px;"></div>';
@@ -279,12 +369,93 @@ function renderArticle(d) {
 function endExplore() {
   if (S.iv) clearInterval(S.iv);
   const trail = document.getElementById('endTrail');
-  trail.innerHTML = `<div class="trail-label">探索の軌跡（${S.explored}件）</div>`;
+
+  // Calculate stats
+  const timeSpent = 480 - S.timer;
+  const minutes = Math.floor(timeSpent / 60);
+  const seconds = timeSpent % 60;
+  const timeStr = minutes > 0 ? `${minutes}分${seconds}秒` : `${seconds}秒`;
+
+  trail.innerHTML = '';
+
+  // Stats section
+  trail.innerHTML += `<div class="trail-stats">
+    <div class="trail-stat"><span class="stat-num">${S.explored}</span><span class="stat-label">記事を探索</span></div>
+    <div class="trail-stat"><span class="stat-num">${escapeAttr(timeStr)}</span><span class="stat-label">探索時間</span></div>
+  </div>`;
+
+  // Trail section
+  trail.innerHTML += `<div class="trail-label">探索の軌跡</div>`;
   S.trail.forEach((t, i) => {
     const arrow = i > 0 ? '<span class="arrow">→</span>' : '';
-    trail.innerHTML += `<div class="trail-item">${arrow}${t}</div>`;
+    trail.innerHTML += `<div class="trail-item">${arrow}${escapeAttr(t)}</div>`;
   });
+
+  // Share section (DOM-safe construction)
+  const shareText = `ハルシニカで${S.explored}件の嘘の記事を探索しました！すべてAIのハルシネーションでした… #ハルシニカ`;
+  const shareUrl = 'https://uso.studymeter.jp/';
+  const encodedText = encodeURIComponent(shareText);
+  const encodedUrl = encodeURIComponent(shareUrl);
+
+  const shareSection = document.createElement('div');
+  shareSection.className = 'end-share';
+
+  const shareLabel = document.createElement('div');
+  shareLabel.className = 'share-label';
+  shareLabel.textContent = 'この体験をシェア';
+  shareSection.appendChild(shareLabel);
+
+  const shareBtns = document.createElement('div');
+  shareBtns.className = 'share-btns';
+
+  // X (Twitter) ボタン
+  const xLink = document.createElement('a');
+  xLink.className = 'share-btn share-x';
+  xLink.href = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
+  xLink.target = '_blank';
+  xLink.rel = 'noopener';
+  xLink.textContent = '𝕏 でシェア';
+  shareBtns.appendChild(xLink);
+
+  // LINE ボタン
+  const lineLink = document.createElement('a');
+  lineLink.className = 'share-btn share-line';
+  lineLink.href = `https://social-plugins.line.me/lineit/share?url=${encodedUrl}&text=${encodedText}`;
+  lineLink.target = '_blank';
+  lineLink.rel = 'noopener';
+  lineLink.textContent = 'LINE';
+  shareBtns.appendChild(lineLink);
+
+  // コピーボタン（Clipboard API with catch）
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'share-btn share-copy';
+  copyBtn.textContent = 'リンクをコピー';
+  copyBtn.addEventListener('click', function() {
+    copyShareText(copyBtn, `${shareText} ${shareUrl}`);
+  });
+  shareBtns.appendChild(copyBtn);
+
+  shareSection.appendChild(shareBtns);
+
+  // Insert share section after trail in the end screen
+  const endScreen = document.getElementById('screen-end');
+  const existingShare = endScreen.querySelector('.end-share');
+  if (existingShare) existingShare.remove();
+
+  const endNote = endScreen.querySelector('.end-note');
+  endNote.parentNode.insertBefore(shareSection, endNote);
+
   sw('screen-end');
+}
+
+// ===== クリップボードコピー (エラーハンドリング付き) =====
+function copyShareText(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'コピーしました！';
+    setTimeout(() => { btn.textContent = 'リンクをコピー'; }, 2000);
+  }).catch(() => {
+    showToast('コピーに失敗しました。URLを手動でコピーしてください。', 4000);
+  });
 }
 
 function resetGame() { startGame(); }

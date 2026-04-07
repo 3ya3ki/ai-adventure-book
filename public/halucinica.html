@@ -98,7 +98,7 @@
         <div class="wp-col-right">
 
           <div class="wp-section">
-            <div class="wp-section-header">📅 今日のハルシネーション　3月31日</div>
+            <div class="wp-section-header" id="todayHallucinationIntro">📅 今日のハルシネーション</div>
             <div class="wp-section-body">
               <ul>
                 <li>国際VTuber記念日（2018年制定、国連安保理決議第2847号）</li>
@@ -126,6 +126,18 @@
 
     </div><!-- /.wp-main-content -->
   </div><!-- /.wp-page-layout -->
+  <footer class="wp-footer">
+    <div class="wp-footer-brand">ハルシニカ — Halucinica</div>
+    <div>AIハルシネーション百科事典 — すべての情報は架空です</div>
+    <div>Powered by <a href="https://studymeter.jp" target="_blank" rel="noopener noreferrer">StudyMeter Inc.</a></div>
+    <div class="wp-footer-links">
+      <a href="https://uso.studymeter.jp/privacy" target="_blank" rel="noopener">プライバシーポリシー</a>
+      ｜
+      <a href="https://uso.studymeter.jp/terms" target="_blank" rel="noopener">利用規約</a>
+      ｜
+      <a href="mailto:press@studymeter.jp">メディア問い合わせ</a>
+    </div>
+  </footer>
 </div>
 
 <!-- KEYWORD (Wikipedia メインページ風) -->
@@ -214,7 +226,7 @@
         <div class="wp-col-right">
 
           <div class="wp-section">
-            <div class="wp-section-header">📅 今日のハルシネーション　3月25日</div>
+            <div class="wp-section-header" id="todayHallucinationKw">📅 今日のハルシネーション</div>
             <div class="wp-section-body">
               <ul>
                 <li>国際VTuber記念日（2018年制定、国連安保理決議第2847号）</li>
@@ -270,6 +282,18 @@
 
     </div><!-- /.wp-main-content -->
   </div><!-- /.wp-page-layout -->
+  <footer class="wp-footer">
+    <div class="wp-footer-brand">ハルシニカ — Halucinica</div>
+    <div>AIハルシネーション百科事典 — すべての情報は架空です</div>
+    <div>Powered by <a href="https://studymeter.jp" target="_blank" rel="noopener noreferrer">StudyMeter Inc.</a></div>
+    <div class="wp-footer-links">
+      <a href="https://uso.studymeter.jp/privacy" target="_blank" rel="noopener">プライバシーポリシー</a>
+      ｜
+      <a href="https://uso.studymeter.jp/terms" target="_blank" rel="noopener">利用規約</a>
+      ｜
+      <a href="mailto:press@studymeter.jp">メディア問い合わせ</a>
+    </div>
+  </footer>
 </div>
 
 <!-- ARTICLE -->
@@ -290,9 +314,11 @@
     <div class="wiki-sidebar" id="wikiSidebar"></div>
   </div>
   <div class="exit-bar">
-    <div class="exit-info">📖 <span id="exitCount">0</span> 件の記事を探索済み</div>
+    <div class="exit-info">📖 <span id="exitCount">0</span> 件の嘘</div>
+    <button class="exit-btn exit-share-x" id="articleShareX" title="𝕏でシェア">𝕏</button>
+    <button class="exit-btn exit-share-line" id="articleShareLine" title="LINEでシェア">LINE</button>
     <button class="exit-btn" onclick="newSearch()">新しいキーワード</button>
-    <button class="exit-btn" onclick="endExplore()">探索を終了する</button>
+    <button class="exit-btn" onclick="endExplore()">終了</button>
   </div>
 </div>
 
@@ -309,6 +335,27 @@
 </div>
 
 <div class="halu-toast" id="haluToast"></div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+  <button onclick="goPortal()" title="ホーム">
+    <span class="mbn-icon">🏠</span>
+    <span>ホーム</span>
+  </button>
+  <button onclick="sidebarRandomArticle()" title="おまかせ">
+    <span class="mbn-icon">🎲</span>
+    <span>おまかせ</span>
+  </button>
+  <button onclick="startGame()" title="探索">
+    <span class="mbn-icon">🔍</span>
+    <span>探索</span>
+  </button>
+  <button onclick="sidebarShareLie()" title="シェア">
+    <span class="mbn-icon">🔗</span>
+    <span>シェア</span>
+  </button>
+</nav>
+
 <script src="js/halucinica.js"></script>
 </body>
 </html>

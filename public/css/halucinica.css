@@ -226,12 +226,13 @@ a:hover { text-decoration: underline; }
 .wp-sister-item { font-family: var(--ff-sans); font-size: .8rem; color: #54595d; }
 
 /* Mobile */
-@media (max-width: 700px) {
+@media (max-width: 720px) {
   .wp-sidebar { display: none; }
   .wp-main-content { border-left: none; }
   .wp-columns { flex-direction: column; }
   .wp-header-right { display: none; }
   .wp-header-left { min-width: unset; }
+  .wp-portal-btn { padding: 8px 14px; min-height: 44px; }
 }
 
 /* ===== WIKI ARTICLE ===== */
@@ -572,11 +573,92 @@ a:hover { text-decoration: underline; }
   pointer-events: auto;
 }
 
+/* Footer */
+.wp-footer {
+  background: #f8f9fa;
+  border-top: 1px solid #a2a9b1;
+  padding: 12px 16px;
+  text-align: center;
+  font-family: var(--ff-sans);
+  font-size: .72rem;
+  color: var(--text-faint);
+  line-height: 1.8;
+}
+.wp-footer a { color: var(--link); }
+.wp-footer-brand { font-weight: 600; color: var(--text-light); }
+.wp-footer-links { margin-top: 4px; }
+.wp-footer-links a { color: var(--link); font-size: .7rem; }
+
+/* End screen stats */
+.trail-stats {
+  display: flex; justify-content: center; gap: 2rem;
+  padding: .8rem 0;
+  margin-bottom: .8rem;
+  border-bottom: 1px solid rgba(212,168,67,.15);
+}
+.trail-stat { display: flex; flex-direction: column; align-items: center; gap: .2rem; }
+.trail-stat .stat-num { font-family: var(--ff-serif); font-size: 1.4rem; font-weight: 700; color: var(--banner-accent); }
+.trail-stat .stat-label { font-family: var(--ff-sans); font-size: .7rem; color: rgba(232,220,200,.5); text-transform: uppercase; letter-spacing: .05em; }
+
+/* Share section */
+.end-share { margin-top: 1rem; text-align: center; }
+.share-label { font-family: var(--ff-sans); font-size: .75rem; color: rgba(232,220,200,.4); margin-bottom: .5rem; text-transform: uppercase; letter-spacing: .08em; }
+.share-btns { display: flex; gap: .6rem; justify-content: center; }
+.share-btn {
+  display: inline-flex; align-items: center;
+  padding: .4rem 1rem;
+  border-radius: 5px;
+  font-family: var(--ff-sans); font-size: .8rem; font-weight: 600;
+  cursor: pointer; transition: all .15s;
+  text-decoration: none;
+  border: 1px solid rgba(212,168,67,.3);
+  background: transparent; color: var(--banner-accent);
+}
+.share-btn:hover { background: rgba(212,168,67,.12); text-decoration: none; }
+.share-x { background: rgba(212,168,67,.1); }
+.share-line { background: rgba(6,199,85,.1); border-color: rgba(6,199,85,.35); color: #06c755; }
+.share-line:hover { background: rgba(6,199,85,.18); }
+
+/* Exit bar SNS share buttons */
+.exit-share-x, .exit-share-line { font-weight: 700; min-width: 42px; padding: .35rem .7rem; }
+.exit-share-line { color: #06c755; border-color: rgba(6,199,85,.35); }
+.exit-share-line:hover { background: rgba(6,199,85,.08); color: #06c755; }
+
 /* Responsive */
 @media (max-width: 720px) {
   .wiki-body { grid-template-columns: 1fr; }
   .wiki-sidebar { position: static; order: -1; }
   .article-title { font-size: 1.5rem; }
   .infobox { max-width: 100%; }
+  .trail-stats { gap: 1rem; }
+  .trail-stat .stat-num { font-size: 1.1rem; }
+  .share-btns { flex-direction: column; align-items: center; }
   .halu-toast { max-width: 90vw; font-size: .78rem; }
+  .exit-bar { padding: .5rem .8rem; gap: .5rem; flex-wrap: wrap; }
+  .exit-btn { padding: .4rem .8rem; font-size: .75rem; min-height: 44px; }
+  .exit-info { font-size: .75rem; }
+  #screen-article .wiki-body { padding-bottom: 4rem; }
+}
+
+/* ===== MOBILE BOTTOM NAV ===== */
+.mobile-bottom-nav { display: none; }
+
+@media (max-width: 720px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; border-top: 1px solid var(--border);
+    z-index: 110; height: 56px;
+    justify-content: space-around; align-items: center;
+    box-shadow: 0 -2px 8px rgba(0,0,0,.06);
+  }
+  .mobile-bottom-nav button {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    background: none; border: none; font-family: var(--ff-sans); font-size: .62rem;
+    color: var(--text-faint); cursor: pointer; padding: 6px 0; min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-bottom-nav button:active { background: rgba(0,0,0,.04); }
+  .mobile-bottom-nav button .mbn-icon { font-size: 1.15rem; line-height: 1; }
+  #screen-intro .wp-footer, #screen-keyword .wp-footer { margin-bottom: 56px; }
 }
