@@ -71,17 +71,29 @@ async function initHalucinica() {
 }
 
 // ===== ARTICLE SANITIZER (XSS対策: onclick → data-navigate に変換) =====
+function sanitizeContent(html) {
+  // onclick → data-navigate 変換
+  html = html.replace(/onclick="navigate\('([^']+)'\)"/g, 'data-navigate="$1"');
+  // AI が生成する壊れたHTMLタグを修復 (< a → <a, < /a> → </a>)
+  html = html.replace(/< a /g, '<a ');
+  html = html.replace(/< \/a>/g, '</a>');
+  html = html.replace(/< p /g, '<p ');
+  html = html.replace(/< \/p>/g, '</p>');
+  html = html.replace(/< span /g, '<span ');
+  html = html.replace(/< \/span>/g, '</span>');
+  return html;
+}
+
 function sanitizeArticle(item) {
-  var re = /onclick="navigate\('([^']+)'\)"/g;
   if (item.sections) {
     item.sections = item.sections.map(function(s) {
       return {
         heading: s.heading,
-        content: (s.content || '').replace(re, 'data-navigate="$1"'),
+        content: sanitizeContent(s.content || ''),
         subsections: (s.subsections || []).map(function(sub) {
           return {
             heading: sub.heading,
-            content: (sub.content || '').replace(re, 'data-navigate="$1"')
+            content: sanitizeContent(sub.content || '')
           };
         })
       };
@@ -196,14 +208,20 @@ function navigate(kw) { loadArticle(kw); }
 async function loadArticle(keyword) {
   showLoading(`「${keyword}」を検索中…`);
 
-  // Safety timeout for loading (toast instead of alert)
+  // 10秒後: 生成中の案内トースト
+  const loadingInfo = setTimeout(() => {
+    showToast('⏳ 記事を生成中です…もう少しお待ちください', 5000);
+  }, 10000);
+
+  // 30秒後: 実際のタイムアウト
   const loadingTimeout = setTimeout(() => {
     hideLoading();
-    showToast('⏱ 記事の生成に時間がかかっています。もう一度お試しください。', 5000);
-  }, 15000);
+    showToast('⏱ 記事の生成がタイムアウトしました。もう一度お試しください。', 5000);
+  }, 30000);
 
   // L1: In-memory cache
   if (S.cache[keyword]) {
+    clearTimeout(loadingInfo);
     clearTimeout(loadingTimeout);
     hideLoading();
     _displayArticle(keyword, S.cache[keyword]);
@@ -227,6 +245,7 @@ async function loadArticle(keyword) {
       const data = sanitizeArticle(await res.json());
       if (data && data.title) {
         S.cache[keyword] = data;
+        clearTimeout(loadingInfo);
         clearTimeout(loadingTimeout);
         hideLoading();
         _displayArticle(keyword, data);
@@ -239,6 +258,7 @@ async function loadArticle(keyword) {
 
   // L3: Mock DB
   await new Promise(r => setTimeout(r, 400 + Math.random() * 400));
+  clearTimeout(loadingInfo);
   clearTimeout(loadingTimeout);
   hideLoading();
 
