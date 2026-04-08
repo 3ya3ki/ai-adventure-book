@@ -808,6 +808,9 @@ const Trial = (() => {
   let _timerIntervalId = null;
   let _gameRunning = false;
   let _preloadedData = [];
+  let _generation = 0;                  // incremented on init/destroy; guards stale async ops
+  let _cancelCurrentInteraction = null; // reject() for pending showDefenseUI / showReveal
+  let _skipTypewrite = false;           // tap-to-complete current typewrite animation
 
   // === Utility ===
   function delay(ms) {
@@ -815,14 +818,33 @@ const Trial = (() => {
   }
 
   async function typewrite(el, text, speed) {
+    _skipTypewrite = false;
     const spd = speed != null ? speed : (_exhibitionMode ? 15 : 20);
     el.textContent = '';
+
+    // Tap / click anywhere in chat area to instantly complete this message
+    const skipOnTap = () => { _skipTypewrite = true; };
+    if (_chatEl) _chatEl.addEventListener('click', skipOnTap, { once: true });
+
     for (let i = 0; i < text.length; i++) {
-      if (!_gameRunning) return;
+      if (!_gameRunning) {
+        if (_chatEl) _chatEl.removeEventListener('click', skipOnTap);
+        return;
+      }
+      if (_skipTypewrite) {
+        el.textContent = text;
+        if (_chatEl) {
+          _chatEl.removeEventListener('click', skipOnTap);
+          _chatEl.scrollTop = _chatEl.scrollHeight;
+        }
+        return;
+      }
       el.textContent += text[i];
-      if (_chatEl) _chatEl.scrollTop = _chatEl.scrollHeight;
+      // Throttle scroll to every 5 chars — avoids forced reflow on every keystroke
+      if (i % 5 === 0 && _chatEl) _chatEl.scrollTop = _chatEl.scrollHeight;
       await delay(spd);
     }
+    if (_chatEl) _chatEl.removeEventListener('click', skipOnTap);
   }
 
   // === UI construction ===
@@ -948,9 +970,12 @@ const Trial = (() => {
 
   // === Defense UI — returns Promise<{choice, choiceIdx, freeText}> ===
   function showDefenseUI(turnData) {
-    return new Promise(resolve => {
-      if (!_inputEl) return;
+    return new Promise((resolve, reject) => {
+      if (!_inputEl) { reject(new DOMException('aborted', 'AbortError')); return; }
       let selectedIdx = null;
+
+      // Register cancel hook so destroy() can unblock this pending Promise
+      _cancelCurrentInteraction = () => reject(new DOMException('aborted', 'AbortError'));
 
       _inputEl.innerHTML = `
         <div class="trial-defense-panel">
@@ -981,13 +1006,15 @@ const Trial = (() => {
           selectedIdx = parseInt(btn.dataset.idx);
           document.getElementById('trial-free-area').style.display = 'block';
           document.getElementById('trial-submit-btn').style.display = 'block';
-          _inputEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          // Use 'nearest' to avoid over-scrolling on mobile; re-scroll on textarea focus
+          _inputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         });
       });
 
       document.getElementById('trial-submit-btn').addEventListener('click', () => {
         if (selectedIdx === null) return;
         const freeText = (document.getElementById('trial-free-text').value || '').trim();
+        _cancelCurrentInteraction = null;
         _inputEl.innerHTML = '';
         resolve({ choice: turnData.choices[selectedIdx], choiceIdx: selectedIdx, freeText });
       });
@@ -1050,8 +1077,12 @@ const Trial = (() => {
     _chatEl.appendChild(div);
     _chatEl.scrollTop = _chatEl.scrollHeight;
 
-    await new Promise(resolve => {
-      document.getElementById('trial-reveal-next').addEventListener('click', resolve, { once: true });
+    await new Promise((resolve, reject) => {
+      _cancelCurrentInteraction = () => reject(new DOMException('aborted', 'AbortError'));
+      document.getElementById('trial-reveal-next').addEventListener('click', () => {
+        _cancelCurrentInteraction = null;
+        resolve();
+      }, { once: true });
     });
   }
 
@@ -1076,7 +1107,9 @@ const Trial = (() => {
         clearInterval(_timerIntervalId);
         _timerIntervalId = null;
         _gameRunning = false;
-        setTimeout(() => showForcedEnd(), 800);
+        // Capture generation: if destroy()+init() fires within 800ms, showForcedEnd is skipped
+        const gen = _generation;
+        setTimeout(() => { if (_generation === gen) showForcedEnd(); }, 800);
       }
     }, 1000);
   }
@@ -1095,13 +1128,17 @@ const Trial = (() => {
     await showFinalResult();
   }
 
-  // === Preload all rounds in background ===
+  // === Preload all rounds in background (parallel) ===
   async function preloadAllRounds() {
-    for (let i = 0; i < _state.totalRounds; i++) {
-      if (!_gameRunning) return;
-      const data = await loadRoundData(i);
-      _preloadedData[i] = data;
-    }
+    const gen = _generation; // snapshot: discard results if a new game started
+    await Promise.all(
+      Array.from({ length: _state.totalRounds }, (_, i) =>
+        loadRoundData(i).then(data => {
+          // Only write if still the same game session
+          if (_generation === gen) _preloadedData[i] = data;
+        })
+      )
+    );
   }
 
   // === Round data loading ===
@@ -1192,6 +1229,7 @@ const Trial = (() => {
         </div>
       `;
       _chatEl.appendChild(introDiv);
+      _chatEl.scrollTop = 0; // always show intro from the top
 
       function dismiss() {
         introDiv.classList.add('trial-intro--out');
@@ -1202,7 +1240,9 @@ const Trial = (() => {
       }
 
       // Enable "開廷！" button when preload completes (or fails — fallback data is always available)
+      const gen = _generation;
       const enableBtn = () => {
+        if (_generation !== gen) return; // stale: game was destroyed before preload finished
         const btn = document.getElementById('trial-intro-start-btn');
         if (!btn) return;
         btn.disabled = false;
@@ -1252,8 +1292,11 @@ const Trial = (() => {
       await showCutin('異議あり！', 'OBJECTION!', CHARS.prosecution.color);
       await addMessage('prosecution', turnData.prosecution);
 
-      const result = await showDefenseUI(turnData);
-      if (!_gameRunning) return;
+      const result = await showDefenseUI(turnData).catch(e => {
+        if (e.name === 'AbortError') return null;
+        throw e;
+      });
+      if (result === null || !_gameRunning) return;
 
       await showCutin('証拠を見ろ！', 'TAKE  THAT!', CHARS.defense.color);
       await addMessage('defense', `証拠を提示します——「${result.choice.label}」。${result.freeText ? result.freeText : ''}`);
@@ -1271,7 +1314,11 @@ const Trial = (() => {
     await showCutin('閉廷！', 'COURT ADJOURNED', CHARS.judge.color);
     await addMessage('judge', '本公判の審理を終了する。……双方、言いたいことはわかった。わかってしまった。');
 
-    await showReveal(roundData, roundIndex);
+    const revealAborted = await showReveal(roundData, roundIndex).then(() => false).catch(e => {
+      if (e.name === 'AbortError') return true;
+      throw e;
+    });
+    if (revealAborted || !_gameRunning) return;
     _state.completedRounds++;
   }
 
@@ -1325,6 +1372,13 @@ const Trial = (() => {
     }
   }
 
+  // Wrapper used in init() to silently absorb AbortErrors from destroy()
+  function runGameSafe() {
+    return runGame().catch(e => {
+      if (e.name !== 'AbortError') console.error('[Trial] runGame error:', e);
+    });
+  }
+
   // === Public API ===
   return {
     init(options = {}) {
@@ -1333,6 +1387,8 @@ const Trial = (() => {
       _selectedIndices = selectRoundIndices(_fallbackMode);
       _gameRunning = true;
       _preloadedData = [];
+      _generation++;                  // invalidate any in-flight ops from a previous session
+      _cancelCurrentInteraction = null;
       _state = {
         totalRounds: 2,
         completedRounds: 0,
@@ -1343,21 +1399,26 @@ const Trial = (() => {
 
       buildUI();
 
-      // Start fetching round data immediately in the background
+      // Fetch all round data immediately in parallel (background)
       const preloadPromise = preloadAllRounds();
 
-      // Show intro screen; game starts only after user clicks "開廷！"
-      // Timer starts after intro so exhibition countdown reflects actual play time
+      // Show intro; game + timer start only after user clicks "開廷！"
       showIntroScreen(preloadPromise).then(() => {
         if (!_gameRunning) return;
         if (_exhibitionMode) startTimer(8 * 60);
-        runGame();
+        runGameSafe();
       });
     },
 
     destroy() {
+      _generation++;                  // invalidate any in-flight ops (preload, timers, etc.)
       _gameRunning = false;
       _preloadedData = [];
+      // Unblock any pending showDefenseUI / showReveal so their Promises settle
+      if (_cancelCurrentInteraction) {
+        _cancelCurrentInteraction();
+        _cancelCurrentInteraction = null;
+      }
       stopTimer();
       const container = document.getElementById('screen-trial');
       if (container) container.innerHTML = '';
