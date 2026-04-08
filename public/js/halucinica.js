@@ -68,6 +68,49 @@ async function initHalucinica() {
       if (a) { e.preventDefault(); navigate(a.dataset.navigate); }
     });
   }
+
+  // 初回プリフェッチ: ポータルキーワードを裏で事前取得
+  prefetchArticles(['ボカロ', 'VTuber', '推し活']);
+}
+
+// ===== PREFETCH (裏で記事を事前生成してキャッシュ) =====
+var _prefetchQueue = [];
+var _prefetching = false;
+
+function prefetchArticles(keywords) {
+  keywords.forEach(function(kw) {
+    if (!S.cache[kw] && !DB[kw] && _prefetchQueue.indexOf(kw) === -1) {
+      _prefetchQueue.push(kw);
+    }
+  });
+  _runPrefetch();
+}
+
+async function _runPrefetch() {
+  if (_prefetching || _prefetchQueue.length === 0) return;
+  _prefetching = true;
+
+  while (_prefetchQueue.length > 0) {
+    var kw = _prefetchQueue.shift();
+    if (S.cache[kw] || DB[kw]) continue; // already cached
+
+    try {
+      var res = await fetch('/api/halucinica', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyword: kw, context: [] }),
+      });
+      if (res.ok) {
+        var data = sanitizeArticle(await res.json());
+        if (data && data.title) {
+          S.cache[kw] = data;
+        }
+      }
+    } catch (e) {
+      // prefetch failed silently
+    }
+  }
+  _prefetching = false;
 }
 
 // ===== ARTICLE SANITIZER (XSS対策: onclick → data-navigate に変換) =====
@@ -298,6 +341,11 @@ function _displayArticle(keyword, data) {
   _updateCounters();
   _updateArticleShareButtons(data.title || keyword);
   sw('screen-article');
+
+  // 記事の関連項目を裏でプリフェッチ（次のクリックを高速化）
+  if (data.related && data.related.length > 0) {
+    prefetchArticles(data.related.slice(0, 3));
+  }
 }
 
 function _updateCounters() {

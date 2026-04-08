@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 2. 学術論文、書籍、統計データなど、もっともらしい出典を捏造すること
 3. 具体的な数値（年号、人数、金額、パーセンテージ）を積極的に使うこと
 4. 内部リンクを15〜25個含めること（各セクションに均等に分散させること）
-   - 内部リンクは <a class="int-link" onclick="navigate('キーワード')">表示テキスト</a> 形式
+   - 内部リンクは <a class="int-link" data-navigate="キーワード">表示テキスト</a> 形式
    - 関連性の高いキーワード（専門用語、人名、地名、組織名、概念）にリンクを張ること
    - 1文に1〜2個を目安に、自然な流れで配置すること
 5. infoboxには6〜8フィールドを含めること
@@ -79,7 +79,7 @@ ${contextText}
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4.1',
+        model: 'gpt-4.1-mini',
         temperature: 0.9,
         max_tokens: 4000,
         response_format: { type: 'json_object' },
