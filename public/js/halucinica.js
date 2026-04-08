@@ -70,21 +70,29 @@ async function initHalucinica() {
   }
 }
 
-// ===== MOCK DB SANITIZER (XSS対策: onclick → data-navigate に変換) =====
-function sanitizeMockDB(db) {
-  const re = /onclick="navigate\('([^']+)'\)"/g;
-  for (const key of Object.keys(db)) {
-    const item = db[key];
-    if (item.sections) {
-      item.sections = item.sections.map(s => ({
-        ...s,
+// ===== ARTICLE SANITIZER (XSS対策: onclick → data-navigate に変換) =====
+function sanitizeArticle(item) {
+  var re = /onclick="navigate\('([^']+)'\)"/g;
+  if (item.sections) {
+    item.sections = item.sections.map(function(s) {
+      return {
+        heading: s.heading,
         content: (s.content || '').replace(re, 'data-navigate="$1"'),
-        subsections: (s.subsections || []).map(sub => ({
-          ...sub,
-          content: (sub.content || '').replace(re, 'data-navigate="$1"')
-        }))
-      }));
-    }
+        subsections: (s.subsections || []).map(function(sub) {
+          return {
+            heading: sub.heading,
+            content: (sub.content || '').replace(re, 'data-navigate="$1"')
+          };
+        })
+      };
+    });
+  }
+  return item;
+}
+
+function sanitizeMockDB(db) {
+  for (var key of Object.keys(db)) {
+    db[key] = sanitizeArticle(db[key]);
   }
   return db;
 }
@@ -204,7 +212,7 @@ async function loadArticle(keyword) {
     });
 
     if (res.ok) {
-      const data = await res.json();
+      const data = sanitizeArticle(await res.json());
       if (data && data.title) {
         S.cache[keyword] = data;
         clearTimeout(loadingTimeout);
