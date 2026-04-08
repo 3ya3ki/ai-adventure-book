@@ -806,3 +806,237 @@
     min-width: 22px;
   }
 }
+
+/* =========================================
+   Intro screen (tutorial + preload gate)
+   ========================================= */
+
+.trial-intro {
+  animation: trial-msg-in 0.32s ease-out;
+  padding: 28px 22px 26px;
+  background: rgba(35, 31, 25, 0.9);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(80, 69, 59, 0.4);
+  position: relative;
+  overflow: hidden;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+/* Gold corner accents — reuse pattern from .trial-reveal */
+.trial-intro::before,
+.trial-intro::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #f0bd8f;
+}
+.trial-intro::before { top: 0; left: 0; }
+.trial-intro::after  { bottom: 0; right: 0; }
+
+/* Fade-out on dismiss */
+.trial-intro--out {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* --- Header --- */
+.trial-intro-header {
+  text-align: center;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(80, 69, 59, 0.4);
+  margin-bottom: 22px;
+}
+
+.trial-intro-gavel {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 10px;
+  animation: trial-gavel-drop 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.trial-intro-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #f0bd8f;
+  letter-spacing: 0.28em;
+  line-height: 1.2;
+}
+
+.trial-intro-subtitle {
+  font-size: 0.7rem;
+  color: #9d8e83;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+
+/* --- Body --- */
+.trial-intro-body {
+  margin-bottom: 26px;
+}
+
+.trial-intro-section-label {
+  font-size: 0.64rem;
+  color: #9d8e83;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.trial-intro-role-block {
+  margin-bottom: 18px;
+}
+
+.trial-intro-role {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.08rem;
+  font-weight: 900;
+  color: #3b82f6;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.trial-intro-role-desc {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: #d4c3b7;
+}
+
+.trial-intro-divider {
+  border: none;
+  border-top: 1px solid rgba(80, 69, 59, 0.4);
+  margin: 18px 0 16px;
+}
+
+/* --- Rules list --- */
+.trial-intro-rules {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.trial-intro-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #d4c3b7;
+}
+
+.trial-intro-rule strong {
+  color: #eae1d8;
+}
+
+.trial-intro-rule-num {
+  flex-shrink: 0;
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: #f0bd8f;
+  background: rgba(240, 189, 143, 0.1);
+  border: 1px solid rgba(240, 189, 143, 0.3);
+  padding: 2px 7px;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+
+.trial-intro-meta {
+  font-size: 0.72rem;
+  color: #50453b;
+  text-align: right;
+  margin-top: 16px;
+  letter-spacing: 0.04em;
+}
+
+/* --- Footer --- */
+.trial-intro-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Start button — disabled (loading) state */
+.trial-intro-start-btn {
+  width: 100%;
+  padding: 17px;
+  background: #1a1714;
+  border: 1px solid #50453b;
+  color: #9d8e83;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: not-allowed;
+  transition: background 0.35s, color 0.35s, border-color 0.35s, box-shadow 0.35s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Animated dots on disabled button */
+.trial-intro-start-btn:disabled::after {
+  content: '';
+  animation: trial-dots 1.2s infinite;
+}
+
+/* Start button — ready state (preload complete) */
+.trial-intro-start-btn--ready {
+  background: linear-gradient(to right, #f0bd8f, #c4956a);
+  border-color: transparent;
+  color: #482907;
+  cursor: pointer;
+  animation: trial-intro-glow 2s ease-in-out infinite;
+}
+
+.trial-intro-start-btn--ready:hover {
+  filter: brightness(1.1);
+  transform: scale(1.005);
+}
+
+.trial-intro-start-btn--ready:active {
+  transform: scale(0.97);
+  animation: none;
+}
+
+@keyframes trial-intro-glow {
+  0%,  100% { box-shadow: 0 0 16px rgba(240, 189, 143, 0.25); }
+  50%        { box-shadow: 0 0 38px rgba(240, 189, 143, 0.6), 0 0 8px rgba(240, 189, 143, 0.35); }
+}
+
+/* Skip button */
+.trial-intro-skip-btn {
+  background: transparent;
+  border: none;
+  color: #9d8e83;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  padding: 5px 10px;
+  transition: color 0.18s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.trial-intro-skip-btn:hover {
+  color: #d4c3b7;
+}
+
+/* Responsive */
+@media (min-width: 480px) {
+  .trial-intro {
+    padding: 34px 28px 30px;
+  }
+  .trial-intro-title {
+    font-size: 1.7rem;
+  }
+  .trial-intro-rule {
+    font-size: 0.93rem;
+  }
+}

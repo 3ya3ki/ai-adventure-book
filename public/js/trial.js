@@ -807,6 +807,7 @@ const Trial = (() => {
   let _selectedIndices = FIXED_INDICES.slice();
   let _timerIntervalId = null;
   let _gameRunning = false;
+  let _preloadedData = [];
 
   // === Utility ===
   function delay(ms) {
@@ -1094,8 +1095,18 @@ const Trial = (() => {
     await showFinalResult();
   }
 
+  // === Preload all rounds in background ===
+  async function preloadAllRounds() {
+    for (let i = 0; i < _state.totalRounds; i++) {
+      if (!_gameRunning) return;
+      const data = await loadRoundData(i);
+      _preloadedData[i] = data;
+    }
+  }
+
   // === Round data loading ===
   async function loadRoundData(roundIndex) {
+    if (_preloadedData[roundIndex]) return _preloadedData[roundIndex];
     try {
       const result = await ErrorHandler.retryWithBackoff(async () => {
         const r = await fetch('/api/trial', {
@@ -1138,6 +1149,75 @@ const Trial = (() => {
     if (el) el.remove();
   }
 
+  // === Intro screen (tutorial + preload gate) ===
+  function showIntroScreen(preloadPromise) {
+    return new Promise(resolve => {
+      if (!_chatEl) { resolve(); return; }
+
+      const introDiv = document.createElement('div');
+      introDiv.className = 'trial-intro';
+      introDiv.innerHTML = `
+        <div class="trial-intro-header">
+          <div class="trial-intro-gavel">⚖️</div>
+          <div class="trial-intro-title">THE GAVEL</div>
+          <div class="trial-intro-subtitle">ハルシネーション裁判</div>
+        </div>
+        <div class="trial-intro-body">
+          <div class="trial-intro-role-block">
+            <div class="trial-intro-section-label">あなたの役割</div>
+            <div class="trial-intro-role">弁護人</div>
+            <div class="trial-intro-role-desc">AIが生成した「もっともらしい嘘」を、全力で弁護してください。</div>
+          </div>
+          <div class="trial-intro-divider"></div>
+          <div class="trial-intro-section-label">ルール</div>
+          <ol class="trial-intro-rules">
+            <li class="trial-intro-rule">
+              <span class="trial-intro-rule-num">01</span>
+              <span>検事がAIの主張に<strong>異議</strong>を唱える</span>
+            </li>
+            <li class="trial-intro-rule">
+              <span class="trial-intro-rule-num">02</span>
+              <span><strong>3つの弁護方針</strong>から選択し、AIを守れ</span>
+            </li>
+            <li class="trial-intro-rule">
+              <span class="trial-intro-rule-num">03</span>
+              <span>全<strong>${_state.totalRounds}ラウンド</strong>終了後、AIの嘘の正体が明かされる</span>
+            </li>
+          </ol>
+          <div class="trial-intro-meta">全${_state.totalRounds}ラウンド・約8分</div>
+        </div>
+        <div class="trial-intro-footer">
+          <button class="trial-intro-start-btn" id="trial-intro-start-btn" disabled>準備中</button>
+          <button class="trial-intro-skip-btn" id="trial-intro-skip-btn">スキップして始める →</button>
+        </div>
+      `;
+      _chatEl.appendChild(introDiv);
+
+      function dismiss() {
+        introDiv.classList.add('trial-intro--out');
+        setTimeout(() => {
+          if (introDiv.parentNode) introDiv.remove();
+          resolve();
+        }, 280);
+      }
+
+      // Enable "開廷！" button when preload completes (or fails — fallback data is always available)
+      const enableBtn = () => {
+        const btn = document.getElementById('trial-intro-start-btn');
+        if (!btn) return;
+        btn.disabled = false;
+        btn.classList.add('trial-intro-start-btn--ready');
+        btn.textContent = '開廷 / COURT IN SESSION';
+        btn.addEventListener('click', dismiss, { once: true });
+      };
+      preloadPromise.then(enableBtn).catch(enableBtn);
+
+      // Skip button is always available immediately
+      document.getElementById('trial-intro-skip-btn')
+        .addEventListener('click', dismiss, { once: true });
+    });
+  }
+
   // === Single round flow ===
   async function runRound(roundIndex) {
     if (!_gameRunning) return;
@@ -1148,9 +1228,10 @@ const Trial = (() => {
     if (_chatEl) _chatEl.innerHTML = '';
     _state.roundLayers = [];
 
-    showLoading();
+    const alreadyLoaded = !!_preloadedData[roundIndex];
+    if (!alreadyLoaded) showLoading();
     const roundData = await loadRoundData(roundIndex);
-    hideLoading();
+    if (!alreadyLoaded) hideLoading();
 
     if (!_gameRunning) return;
 
@@ -1251,6 +1332,7 @@ const Trial = (() => {
       _fallbackMode = options.fallbackMode || 'fixed';
       _selectedIndices = selectRoundIndices(_fallbackMode);
       _gameRunning = true;
+      _preloadedData = [];
       _state = {
         totalRounds: 2,
         completedRounds: 0,
@@ -1261,15 +1343,21 @@ const Trial = (() => {
 
       buildUI();
 
-      if (_exhibitionMode) {
-        startTimer(8 * 60);
-      }
+      // Start fetching round data immediately in the background
+      const preloadPromise = preloadAllRounds();
 
-      runGame();
+      // Show intro screen; game starts only after user clicks "開廷！"
+      // Timer starts after intro so exhibition countdown reflects actual play time
+      showIntroScreen(preloadPromise).then(() => {
+        if (!_gameRunning) return;
+        if (_exhibitionMode) startTimer(8 * 60);
+        runGame();
+      });
     },
 
     destroy() {
       _gameRunning = false;
+      _preloadedData = [];
       stopTimer();
       const container = document.getElementById('screen-trial');
       if (container) container.innerHTML = '';
