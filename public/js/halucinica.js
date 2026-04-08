@@ -122,7 +122,7 @@ function hideLoading() {
 }
 
 // ===== GAME FLOW =====
-function startGame() {
+function startGame(initialKeyword) {
   S = { explored: 0, trail: [], cache: {}, timer: S.timer, iv: null, history: [] };
 
   // Reset timer display
@@ -135,7 +135,19 @@ function startGame() {
     el.parentElement.style.display = 'none';
   }
 
-  sw('screen-keyword');
+  // intro画面の検索バーからキーワード付きで呼ばれた場合、直接検索
+  if (initialKeyword && initialKeyword.trim()) {
+    sw('screen-keyword');
+    search(initialKeyword.trim());
+  } else {
+    sw('screen-keyword');
+  }
+}
+
+// intro画面の検索バーから呼ばれる関数
+function startGameFromIntro(inputEl) {
+  var val = inputEl ? inputEl.value.trim() : '';
+  startGame(val);
 }
 
 function startTimer() {

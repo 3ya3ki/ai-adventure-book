@@ -25,8 +25,8 @@
         <div class="wp-logo-wordmark">ハルシ<span>ニカ</span></div>
       </div>
       <div class="wp-header-search">
-        <input type="text" class="wp-search-input" placeholder="ハルシニカ内を検索" maxlength="30" onkeydown="if(event.key==='Enter') startGame()">
-        <button class="wp-search-btn" onclick="startGame()">検索</button>
+        <input type="text" class="wp-search-input" placeholder="ハルシニカ内を検索" maxlength="30" onkeydown="if(event.key==='Enter') startGameFromIntro(this)">
+        <button class="wp-search-btn" onclick="startGameFromIntro(this.previousElementSibling)">検索</button>
       </div>
       <div class="wp-header-right">
         <a class="wp-nav-link" href="#">寄付</a>
