@@ -13,13 +13,8 @@
 
 /* --- Portal base --- */
 #screen-portal {
+  position: relative;
   background-color: #0d0a06;
-  background-image:
-    linear-gradient(to bottom, rgba(13,10,6,0.55) 0%, rgba(13,10,6,0.72) 60%, rgba(13,10,6,0.92) 100%),
-    url('../img/bg-courtroom.jpg');
-  background-size: cover;
-  background-position: center top;
-  background-attachment: fixed;
   min-height: 100vh;
   min-height: 100dvh;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -27,8 +22,45 @@
   overflow-x: hidden;
 }
 
+/* Background slideshow — library (bottom layer, always present) */
+#screen-portal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom,
+      rgba(13,10,6,0.55) 0%,
+      rgba(13,10,6,0.72) 60%,
+      rgba(13,10,6,0.92) 100%),
+    url('../img/bg-library.jpg') center top / cover no-repeat;
+  z-index: 0;
+}
+
+/* Background slideshow — courtroom (top layer, fades in/out) */
+#screen-portal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom,
+      rgba(13,10,6,0.55) 0%,
+      rgba(13,10,6,0.72) 60%,
+      rgba(13,10,6,0.92) 100%),
+    url('../img/bg-courtroom.jpg') center top / cover no-repeat;
+  z-index: 1;
+  animation: portal-bg-fade 16s ease-in-out infinite;
+}
+
+@keyframes portal-bg-fade {
+  0%, 37.5%  { opacity: 1; }
+  50%, 87.5% { opacity: 0; }
+  100%       { opacity: 1; }
+}
+
 /* --- Wrapper --- */
 .portal-wrapper {
+  position: relative;
+  z-index: 2;
   max-width: 900px;
   margin: 0 auto;
   padding: 0 20px;
