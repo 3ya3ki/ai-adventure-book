@@ -819,7 +819,7 @@ const Trial = (() => {
 
   async function typewrite(el, text, speed) {
     _skipTypewrite = false;
-    const spd = speed != null ? speed : (_exhibitionMode ? 15 : 20);
+    const spd = speed != null ? speed : (_exhibitionMode ? 25 : 32);
     el.textContent = '';
 
     // Tap / click anywhere in chat area to instantly complete this message
@@ -1289,6 +1289,7 @@ const Trial = (() => {
       if (!_gameRunning) return;
       const turnData = roundData.turns[t];
 
+      await delay(800);
       await showCutin('異議あり！', 'OBJECTION!', CHARS.prosecution.color);
       await addMessage('prosecution', turnData.prosecution);
 
