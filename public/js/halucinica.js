@@ -50,6 +50,8 @@ async function initHalucinica() {
   if (introDate) introDate.textContent = dateStr;
   if (kwDate) kwDate.textContent = dateStr;
 
+  renderPortalCategories();
+
   // Enter key handlers
   const kwInput = document.getElementById('kwInput');
   if (kwInput) kwInput.addEventListener('keypress', e => {
@@ -566,6 +568,22 @@ function showToast(msg, ms) {
 }
 
 function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+const PORTAL_CATEGORIES = [
+  'ボカロ', 'VTuber', '推し活', 'アニメ', 'ゲーム', '音楽',
+  'マンガ', 'コスプレ', '声優', '同人誌', 'ラノベ', 'フィギュア',
+  'ニコニコ', 'ネットミーム', 'eスポーツ', 'アイドル',
+];
+
+function renderPortalCategories() {
+  const shuffled = [...PORTAL_CATEGORIES].sort(() => Math.random() - 0.5);
+  const picks = shuffled.slice(0, 6);
+  document.querySelectorAll('.wp-portal-links').forEach(container => {
+    container.innerHTML = picks.map(c =>
+      `<button class="wp-portal-btn" onclick="search('${escapeAttr(c)}')">${escapeAttr(c)}</button>`
+    ).join('');
+  });
+}
 
 // ===== SIDEBAR ACTIONS =====
 function sidebarWriteLie() {
