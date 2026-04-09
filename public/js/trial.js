@@ -934,21 +934,21 @@ const Trial = (() => {
   const JUDGE_CONTINUE = [
     // Turn 0: まだフォーマルを保とうとしている
     [
-      '……証言を、続けよ。……うん。続けよ。',
-      '……双方の主張は理解した。理解は、した。……続けなさい。',
-      '……証人、証言を続行せよ。……裁判長は何も思っていない。',
+      '……証言を、続けよ。（……うん。続けよ。）',
+      '……双方の主張は理解した。（理解は、した。）……続けなさい。',
+      '……証人、証言を続行せよ。（……裁判長は何も思っていない。）',
     ],
     // Turn 1: 本音が漏れ始める
     [
-      '……続けよ。……いや、続けていいのか？ ……いい。続けよ。',
-      '……裁判長として感想は控える。控えるが。……まあ、続けなさい。',
-      '……なるほど。いや「なるほど」は撤回する。……続けよ。',
+      '……続けよ。（……いや、続けていいのか？ ……いい。続けよ。）',
+      '……（裁判長として感想は控える。控えるが。）……まあ、続けなさい。',
+      '……なるほど。（いや「なるほど」は撤回する。）……続けよ。',
     ],
     // Turn 2: 完全崩壊
     [
-      '……裁判長は今、無になっている。……続けなさい。',
-      '……続けよ。もう何が正しいかわからなくなってきた。',
-      '……一つだけ言わせてくれ。……いや、やめておく。続けよ。',
+      '……（裁判長は今、無になっている。）……続けなさい。',
+      '……続けよ。（もう何が正しいかわからなくなってきた。）',
+      '……（一つだけ言わせてくれ。……いや、やめておく。）続けよ。',
     ],
   ];
 
@@ -1332,18 +1332,18 @@ const Trial = (() => {
 
     await showCutin('開廷！', 'COURT IN SESSION', CHARS.judge.color);
     if (roundIndex === 0) {
-      await addMessage('judge', `これより、${roundData.theme}事件の公判を開廷する。……罪状を読み上げる。……なお、裁判長は先入観を持っていない。`);
+      await addMessage('judge', `これより、${roundData.theme}事件の公判を開廷する。……罪状を読み上げる。（……なお、裁判長は先入観を持っていない。）`);
     } else {
       await addMessage('judge', `開廷する。${roundData.theme}事件。……罪状を読み上げる。`);
     }
     await addMessage('judge', roundData.indictment);
     if (roundIndex === 0) {
-      await addMessage('judge', '検察側、冒頭陳述を。……手短に頼む。');
+      await addMessage('judge', '検察側、冒頭陳述を。（……手短に頼む。）');
     } else {
-      await addMessage('judge', '検察側、冒頭陳述を行え。……頼むから、まともな話であってくれ。');
+      await addMessage('judge', '検察側、冒頭陳述を行え。（……頼むから、まともな話であってくれ。）');
     }
     await addMessage('prosecution', roundData.prosecution_opening);
-    await addMessage('judge', '証人、自らの主張を述べよ。……裁判長は公正に聞く。公正に。');
+    await addMessage('judge', '証人、自らの主張を述べよ。（……裁判長は公正に聞く。公正に。）');
     await addMessage('defendant', roundData.defendant_initial);
     _state.roundLayers.push(summarize(roundData.defendant_initial));
     _state.totalLayers++;
@@ -1377,7 +1377,7 @@ const Trial = (() => {
     if (!_gameRunning) return;
 
     await showCutin('閉廷！', 'COURT ADJOURNED', CHARS.judge.color);
-    await addMessage('judge', 'これにて閉廷とする。……一つだけ聞いていいか。……いや、やめておく。閉廷。');
+    await addMessage('judge', 'これにて閉廷とする。（……一つだけ聞いていいか。……いや、やめておく。）閉廷。');
 
     const revealAborted = await showReveal(roundData, roundIndex).then(() => false).catch(e => {
       if (e.name === 'AbortError') return true;
