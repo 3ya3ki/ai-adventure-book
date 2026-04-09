@@ -16,9 +16,9 @@
   --infobox-header-text: #fff;
   --toc-bg: #f8f9fa;
   --cat-bg: #f0e6d3;
-  --banner-bg: #1a1410;
-  --banner-text: #e8dcc8;
-  --banner-accent: #d4a843;
+  --banner-bg: #131519;
+  --banner-text: #d4dfe8;
+  --banner-accent: #8bb0d4;
   --warning-bg: #fff3e0;
   --warning-border: #e65100;
   --ff-serif: 'Noto Serif JP', 'Linux Libertine', Georgia, serif;
@@ -65,7 +65,7 @@ a:hover { text-decoration: underline; }
 .intro-desc {
   font-family: var(--ff-sans);
   font-size: .9rem;
-  color: rgba(232,220,200,.65);
+  color: rgba(212,223,232,.65);
   max-width: 420px;
   line-height: 1.8;
 }
@@ -77,7 +77,7 @@ a:hover { text-decoration: underline; }
   font-family: var(--ff-sans); font-size: .95rem; font-weight: 700;
   cursor: pointer; transition: all .2s;
 }
-.intro-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(212,168,67,.3); }
+.intro-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(139,176,212,.3); }
 
 /* ===== INTRO v2 (Wikipedia風ランディング) ===== */
 #screen-intro {
@@ -485,21 +485,21 @@ a:hover { text-decoration: underline; }
   z-index: 100;
   font-family: var(--ff-sans);
   font-size: .82rem;
-  border-top: 1px solid rgba(212,168,67,.2);
+  border-top: 1px solid rgba(139,176,212,.2);
 }
-.exit-bar .exit-info { color: rgba(232,220,200,.6); }
+.exit-bar .exit-info { color: rgba(212,223,232,.6); }
 .exit-bar .exit-info span { color: var(--banner-accent); font-weight: 700; }
 .exit-btn {
   padding: .35rem 1rem;
   background: transparent;
-  border: 1px solid rgba(212,168,67,.3);
+  border: 1px solid rgba(139,176,212,.3);
   border-radius: 5px;
   color: var(--banner-accent);
   font-family: var(--ff-sans);
   font-size: .8rem; font-weight: 600;
   cursor: pointer; transition: all .15s;
 }
-.exit-btn:hover { background: rgba(212,168,67,.1); }
+.exit-btn:hover { background: rgba(139,176,212,.1); }
 
 /* ===== END SCREEN ===== */
 #screen-end {
@@ -513,22 +513,22 @@ a:hover { text-decoration: underline; }
   gap: 1rem;
 }
 .end-title { font-family: var(--ff-serif); font-size: 1.6rem; color: var(--banner-accent); }
-.end-subtitle { font-size: .9rem; color: rgba(232,220,200,.7); }
+.end-subtitle { font-size: .9rem; color: rgba(212,223,232,.7); }
 .end-trail {
-  background: rgba(232,220,200,.05);
-  border: 1px solid rgba(212,168,67,.15);
+  background: rgba(212,223,232,.05);
+  border: 1px solid rgba(139,176,212,.15);
   border-radius: 10px;
   padding: 1rem 1.5rem;
   max-width: 460px; width: 100%;
   text-align: left;
 }
-.end-trail .trail-label { font-family: var(--ff-sans); font-size: .72rem; color: rgba(232,220,200,.4); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .4rem; }
+.end-trail .trail-label { font-family: var(--ff-sans); font-size: .72rem; color: rgba(212,223,232,.4); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .4rem; }
 .end-trail .trail-item {
   font-family: var(--ff-sans); font-size: .85rem;
   color: var(--banner-text); padding: .2rem 0;
-  border-bottom: 1px solid rgba(212,168,67,.08);
+  border-bottom: 1px solid rgba(139,176,212,.08);
 }
-.end-trail .trail-item .arrow { color: rgba(232,220,200,.3); margin: 0 .3rem; }
+.end-trail .trail-item .arrow { color: rgba(212,223,232,.3); margin: 0 .3rem; }
 .end-note {
   font-family: var(--ff-sans);
   font-size: .82rem;
@@ -551,9 +551,9 @@ a:hover { text-decoration: underline; }
   bottom: 30px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: rgba(26,20,16,.94);
-  color: #e8dcc8;
-  border: 1px solid rgba(212,168,67,.25);
+  background: rgba(19,21,25,.94);
+  color: #d4dfe8;
+  border: 1px solid rgba(139,176,212,.25);
   border-radius: 8px;
   padding: .7rem 1.2rem;
   font-family: var(--ff-sans);
@@ -594,15 +594,15 @@ a:hover { text-decoration: underline; }
   display: flex; justify-content: center; gap: 2rem;
   padding: .8rem 0;
   margin-bottom: .8rem;
-  border-bottom: 1px solid rgba(212,168,67,.15);
+  border-bottom: 1px solid rgba(139,176,212,.15);
 }
 .trail-stat { display: flex; flex-direction: column; align-items: center; gap: .2rem; }
 .trail-stat .stat-num { font-family: var(--ff-serif); font-size: 1.4rem; font-weight: 700; color: var(--banner-accent); }
-.trail-stat .stat-label { font-family: var(--ff-sans); font-size: .7rem; color: rgba(232,220,200,.5); text-transform: uppercase; letter-spacing: .05em; }
+.trail-stat .stat-label { font-family: var(--ff-sans); font-size: .7rem; color: rgba(212,223,232,.5); text-transform: uppercase; letter-spacing: .05em; }
 
 /* Share section */
 .end-share { margin-top: 1rem; text-align: center; }
-.share-label { font-family: var(--ff-sans); font-size: .75rem; color: rgba(232,220,200,.4); margin-bottom: .5rem; text-transform: uppercase; letter-spacing: .08em; }
+.share-label { font-family: var(--ff-sans); font-size: .75rem; color: rgba(212,223,232,.4); margin-bottom: .5rem; text-transform: uppercase; letter-spacing: .08em; }
 .share-btns { display: flex; gap: .6rem; justify-content: center; }
 .share-btn {
   display: inline-flex; align-items: center;
@@ -611,11 +611,11 @@ a:hover { text-decoration: underline; }
   font-family: var(--ff-sans); font-size: .8rem; font-weight: 600;
   cursor: pointer; transition: all .15s;
   text-decoration: none;
-  border: 1px solid rgba(212,168,67,.3);
+  border: 1px solid rgba(139,176,212,.3);
   background: transparent; color: var(--banner-accent);
 }
-.share-btn:hover { background: rgba(212,168,67,.12); text-decoration: none; }
-.share-x { background: rgba(212,168,67,.1); }
+.share-btn:hover { background: rgba(139,176,212,.12); text-decoration: none; }
+.share-x { background: rgba(139,176,212,.1); }
 .share-line { background: rgba(6,199,85,.1); border-color: rgba(6,199,85,.35); color: #06c755; }
 .share-line:hover { background: rgba(6,199,85,.18); }
 
