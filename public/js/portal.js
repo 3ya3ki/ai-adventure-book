@@ -5,6 +5,28 @@ const Portal = (() => {
   let _exhibitionMode = false;
   let _inactivityTimer = null;
   const INACTIVITY_MS = 60000;
+  const ATTRACT_MS    = 12000; // 12s no interaction → attract mode
+
+  // Attract messages — interleaved A (AI知識あり) / B (AI未経験)
+  const ATTRACT_MESSAGES = [
+    { lines: ['AIの嘘を、', '守る。'],                               type: 'A' },
+    { lines: ['AIは正直に、', '嘘をつく'],                           type: 'B' },
+    { lines: ['被告人：', 'AI'],                                     type: 'A' },
+    { lines: ['AIは嘘をつく。', 'あなたは守れる？'],                   type: 'B' },
+    { lines: ['AIは嘘をついている。', 'でも悪意はない'],               type: 'A' },
+    { lines: ['AIって、', '嘘をつくって知ってた？'],                   type: 'B' },
+    { lines: ['静粛に。', '法廷、開廷。'],                            type: 'A' },
+    { lines: ['始まりは嘘。', '終わりは、あなたが決める。'],             type: 'B' },
+    { lines: ['AI好きほど、', '引っかかる罠がある'],                   type: 'A' },
+    { lines: ['AIのこと、よくわからない人ほど、', '向いています'],        type: 'B' },
+  ];
+
+  let _attractTimer    = null;
+  let _attractMsgTimer = null;
+  let _attractIndex    = 0;
+  let _attractActive   = false;
+  let _attractEl       = null;
+  let _onPortalScreen  = true;
 
   // --- Fallback mode (Fixed / Random) ---
   let _fallbackMode = sessionStorage.getItem('trial-fallback-mode') || 'fixed';
@@ -36,6 +58,108 @@ const Portal = (() => {
     sw.classList.toggle('portal-mode-switch--on', isRandom);
     sw.setAttribute('aria-pressed', String(isRandom));
     desc.textContent = isRandom ? 'ランダム: 10テーマからランダム選択' : '固定: サンタ・5秒ルール';
+  }
+
+  // --- Attract mode ---
+  const ATTRACT_IN_MS   = 1800;
+  const ATTRACT_HOLD_MS = 3600;
+  const ATTRACT_OUT_MS  = 650;
+
+  function buildAttractEl() {
+    const el = document.createElement('div');
+    el.className = 'attract-overlay';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML =
+      '<div class="attract-content">' +
+        '<div class="attract-rule attract-rule--top"></div>' +
+        '<div class="attract-lines"></div>' +
+        '<div class="attract-rule attract-rule--bottom"></div>' +
+      '</div>' +
+      '<p class="attract-cta">タップして体験する</p>';
+    return el;
+  }
+
+  function runAttractMessage() {
+    if (!_attractActive || !_attractEl) return;
+
+    const msg     = ATTRACT_MESSAGES[_attractIndex % ATTRACT_MESSAGES.length];
+    _attractIndex++;
+
+    const content = _attractEl.querySelector('.attract-content');
+    const ruleTop = _attractEl.querySelector('.attract-rule--top');
+    const ruleBot = _attractEl.querySelector('.attract-rule--bottom');
+    const linesEl = _attractEl.querySelector('.attract-lines');
+
+    // Reset state instantly (no transition)
+    content.style.transition = 'none';
+    content.style.opacity    = '1';
+    content.style.transform  = 'none';
+    content.classList.remove('attract-content--out');
+    ruleTop.classList.remove('attract-rule--in');
+    ruleBot.classList.remove('attract-rule--in');
+    linesEl.innerHTML = '';
+
+    msg.lines.forEach(text => {
+      const span = document.createElement('span');
+      span.className = 'attract-line';
+      span.textContent = text;
+      linesEl.appendChild(span);
+    });
+
+    // Re-enable transitions after two frames to avoid flicker
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      content.style.transition = '';
+      content.style.opacity    = '';
+      content.style.transform  = '';
+
+      // Choreograph: rule → lines (staggered) → rule
+      setTimeout(() => ruleTop.classList.add('attract-rule--in'), 60);
+      const lineEls = linesEl.querySelectorAll('.attract-line');
+      lineEls.forEach((line, i) => {
+        setTimeout(() => line.classList.add('attract-line--in'), 380 + i * 320);
+      });
+      setTimeout(() => ruleBot.classList.add('attract-rule--in'),
+        380 + lineEls.length * 320 + 160);
+    }));
+
+    // Schedule out → next
+    _attractMsgTimer = setTimeout(() => {
+      content.classList.add('attract-content--out');
+      setTimeout(runAttractMessage, ATTRACT_OUT_MS);
+    }, ATTRACT_IN_MS + ATTRACT_HOLD_MS);
+  }
+
+  function showAttract() {
+    if (_attractActive || !_onPortalScreen) return;
+    _attractActive = true;
+
+    // Clean up any lingering overlay from previous cycle
+    document.querySelectorAll('.attract-overlay').forEach(e => e.remove());
+
+    _attractEl = buildAttractEl();
+    document.body.appendChild(_attractEl);
+
+    // Double rAF ensures CSS transition picks up the class change
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      _attractEl.classList.add('attract-overlay--visible');
+    }));
+
+    _attractEl.addEventListener('click',      () => hideAttract());
+    _attractEl.addEventListener('touchstart', () => hideAttract(), { passive: true });
+
+    setTimeout(runAttractMessage, 550);
+  }
+
+  function hideAttract() {
+    if (!_attractActive) return;
+    _attractActive = false;
+    clearTimeout(_attractMsgTimer);
+
+    const el = _attractEl;
+    _attractEl = null;
+    if (!el) return;
+    el.classList.remove('attract-overlay--visible');
+    setTimeout(() => { if (el.parentNode) el.remove(); }, 750);
   }
 
   // --- Screen switching ---
@@ -148,9 +272,13 @@ const Portal = (() => {
   function resetInactivity() {
     if (!_exhibitionMode) return;
     clearTimeout(_inactivityTimer);
-    _inactivityTimer = setTimeout(() => {
-      Portal.navigateToPortal();
-    }, INACTIVITY_MS);
+    clearTimeout(_attractTimer);
+    if (_attractActive) hideAttract();
+
+    if (_onPortalScreen) {
+      _attractTimer = setTimeout(showAttract, ATTRACT_MS);
+    }
+    _inactivityTimer = setTimeout(() => Portal.navigateToPortal(), INACTIVITY_MS);
   }
 
   function attachInactivityListeners() {
@@ -176,6 +304,9 @@ const Portal = (() => {
 
     navigateToTrial() {
       clearTimeout(_inactivityTimer);
+      clearTimeout(_attractTimer);
+      hideAttract();
+      _onPortalScreen = false;
       showScreen('screen-trial');
       if (typeof Trial !== 'undefined') {
         Trial.init({ exhibitionMode: _exhibitionMode, fallbackMode: _fallbackMode });
@@ -186,6 +317,8 @@ const Portal = (() => {
     navigateToPortal() {
       if (typeof Trial !== 'undefined') Trial.destroy();
       if (typeof ResultCard !== 'undefined') ResultCard.cleanup();
+      hideAttract();
+      _onPortalScreen = true;
       showScreen('screen-portal');
       if (_exhibitionMode) resetInactivity();
     },

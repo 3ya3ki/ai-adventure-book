@@ -383,3 +383,186 @@
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/* =========================================
+   ATTRACT MODE
+   アトラクトモード — 12秒無操作で表示
+   ========================================= */
+
+/* --- Overlay backdrop --- */
+.attract-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 8, 6, 0);
+  backdrop-filter: blur(0px) brightness(1);
+  -webkit-backdrop-filter: blur(0px) brightness(1);
+  transition:
+    background 0.75s ease,
+    backdrop-filter 0.75s ease,
+    -webkit-backdrop-filter 0.75s ease;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Ambient spotlight — courtroom overhead lamp effect */
+.attract-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 500px 560px at 50% -30px,
+    rgba(240, 189, 143, 0.055) 0%,
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+/* Cinematic grain texture */
+.attract-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.022;
+  pointer-events: none;
+}
+
+.attract-overlay--visible {
+  background: rgba(10, 8, 6, 0.93);
+  backdrop-filter: blur(5px) brightness(0.55);
+  -webkit-backdrop-filter: blur(5px) brightness(0.55);
+}
+
+/* --- Message content block --- */
+.attract-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 0 52px;
+  max-width: 580px;
+  width: 100%;
+  /* Fade + lift out — controlled by JS class */
+  transition:
+    opacity 0.6s cubic-bezier(0.4, 0, 1, 1),
+    transform 0.6s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.attract-content--out {
+  opacity: 0;
+  transform: translateY(-14px);
+}
+
+/* --- Decorative rules --- */
+.attract-rule {
+  width: 32px;
+  height: 1px;
+  margin: 0 auto;
+  /* Gold gradient fades at both ends — more refined than solid */
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    #f0bd8f 30%,
+    #f0bd8f 70%,
+    transparent 100%
+  );
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.attract-rule--top  { margin-bottom: 36px; }
+.attract-rule--bottom { margin-top: 36px; }
+
+.attract-rule--in {
+  transform: scaleX(1);
+}
+
+/* --- Text lines --- */
+.attract-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attract-line {
+  display: block;
+  font-family: 'Noto Serif JP', serif;
+  font-size: clamp(30px, 7.5vw, 50px);
+  font-weight: 700;
+  color: #eae1d8;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  /* Blind reveal — text wipes in from bottom */
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Line 2 uses slightly softer white for subtle hierarchy */
+.attract-line:last-child:not(:first-child) {
+  color: #d4c3b7;
+}
+
+.attract-line--in {
+  clip-path: inset(0 0 0% 0);
+}
+
+/* --- Bottom CTA --- */
+.attract-cta {
+  position: absolute;
+  bottom: max(72px, calc(56px + env(safe-area-inset-bottom)));
+  left: 0;
+  right: 0;
+  z-index: 1;
+  margin: 0;
+  text-align: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: transparent;
+  pointer-events: none;
+  transition: color 1.2s ease 0.8s;
+}
+
+/* Triangle after CTA text */
+.attract-cta::after {
+  content: ' ▶';
+  font-size: 8px;
+  vertical-align: 1px;
+  letter-spacing: 0;
+}
+
+.attract-overlay--visible .attract-cta {
+  color: rgba(240, 189, 143, 0.5);
+  animation: attract-cta-pulse 2.8s ease-in-out infinite 1.8s;
+}
+
+@keyframes attract-cta-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 0.9;  }
+}
+
+/* --- Mobile --- */
+@media (max-width: 480px) {
+  .attract-content {
+    padding: 0 28px;
+    max-width: 100%;
+  }
+  .attract-line {
+    font-size: clamp(28px, 9vw, 38px);
+    line-height: 1.55;
+  }
+  .attract-rule {
+    width: 24px;
+  }
+  .attract-rule--top    { margin-bottom: 28px; }
+  .attract-rule--bottom { margin-top: 28px; }
+}
+
