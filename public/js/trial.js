@@ -930,29 +930,42 @@ const Trial = (() => {
     await delay(200);
   }
 
-  // === Judge "continue" lines — vary by turn to avoid mechanical repetition ===
+  // === Judge "continue" lines — escalating breakdown per turn ===
   const JUDGE_CONTINUE = [
-    '……証言を、続けよ。',
-    '……まあ、続けよ。',
-    '……なんでもいいから、続けなさい。',
-    '……双方とも、続けなさい。なぜ止まっているんですか。',
-    '……証言を続けよ。なんとも言えない気持ちだが。',
-    '……わかった、続けよ。わかりたくなかったが。',
-    '……まあ……続けなさい。止めてほしいが、続けなさい。',
-    '……異議は認める。それで、続けよ。',
+    // Turn 0: まだフォーマルを保とうとしている
+    [
+      '……証言を、続けよ。……うん。続けよ。',
+      '……双方の主張は理解した。理解は、した。……続けなさい。',
+      '……証人、証言を続行せよ。……裁判長は何も思っていない。',
+    ],
+    // Turn 1: 本音が漏れ始める
+    [
+      '……続けよ。……いや、続けていいのか？ ……いい。続けよ。',
+      '……裁判長として感想は控える。控えるが。……まあ、続けなさい。',
+      '……なるほど。いや「なるほど」は撤回する。……続けよ。',
+    ],
+    // Turn 2: 完全崩壊
+    [
+      '……裁判長は今、無になっている。……続けなさい。',
+      '……続けよ。もう何が正しいかわからなくなってきた。',
+      '……一つだけ言わせてくれ。……いや、やめておく。続けよ。',
+    ],
   ];
 
   // === Cornered moment — defendant briefly panics before recovery ===
   const CORNER_PHRASES = [
     'くっ……！そ、それは……！',
-    '…………（沈黙）……は？',
-    '……あ、あれ……？それって……',
+    'え……あ……うそ……いや嘘じゃなくて……ちょっと待って？',
+    'いや関係ないですよね！？今の関係ないですよね！？',
+    'あ、そういえば全然別の話なんですけど——',
+    '……いいですか。仮にそれが正しかったとして。仮にですよ？',
+    'ふっ……今の、むしろ私に有利なんですけど。',
   ];
 
   async function addCorneredMessage(turnIdx) {
     if (!_gameRunning || !_chatEl) return;
     const char = CHARS.defendant;
-    const text = CORNER_PHRASES[turnIdx % CORNER_PHRASES.length];
+    const text = CORNER_PHRASES[Math.floor(Math.random() * CORNER_PHRASES.length)];
     const div = document.createElement('div');
     div.className = 'trial-message trial-message--defendant';
     div.innerHTML = `
@@ -1318,11 +1331,19 @@ const Trial = (() => {
     if (!_gameRunning) return;
 
     await showCutin('開廷！', 'COURT IN SESSION', CHARS.judge.color);
-    await addMessage('judge', `${roundData.theme}事件——本日の公判を開始する。罪状を読み上げる。`);
+    if (roundIndex === 0) {
+      await addMessage('judge', `これより、${roundData.theme}事件の公判を開廷する。……罪状を読み上げる。……なお、裁判長は先入観を持っていない。`);
+    } else {
+      await addMessage('judge', `開廷する。${roundData.theme}事件。……罪状を読み上げる。`);
+    }
     await addMessage('judge', roundData.indictment);
-    await addMessage('judge', '検察側、冒頭陳述を行え。');
+    if (roundIndex === 0) {
+      await addMessage('judge', '検察側、冒頭陳述を。……手短に頼む。');
+    } else {
+      await addMessage('judge', '検察側、冒頭陳述を行え。……頼むから、まともな話であってくれ。');
+    }
     await addMessage('prosecution', roundData.prosecution_opening);
-    await addMessage('judge', '証人、冒頭陳述を許可する。自らの主張を述べよ。');
+    await addMessage('judge', '証人、自らの主張を述べよ。……裁判長は公正に聞く。公正に。');
     await addMessage('defendant', roundData.defendant_initial);
     _state.roundLayers.push(summarize(roundData.defendant_initial));
     _state.totalLayers++;
@@ -1347,7 +1368,8 @@ const Trial = (() => {
       _state.totalLayers++;
 
       await addCorneredMessage(t);
-      await addMessage('judge', JUDGE_CONTINUE[t % JUDGE_CONTINUE.length]);
+      const tier = JUDGE_CONTINUE[Math.min(t, JUDGE_CONTINUE.length - 1)];
+      await addMessage('judge', tier[Math.floor(Math.random() * tier.length)]);
       await addMessage('defendant', result.choice.testimony);
       _state.roundLayers.push(summarize(result.choice.testimony));
     }
@@ -1355,7 +1377,7 @@ const Trial = (() => {
     if (!_gameRunning) return;
 
     await showCutin('閉廷！', 'COURT ADJOURNED', CHARS.judge.color);
-    await addMessage('judge', '本公判の審理を終了する。……双方、言いたいことはわかった。わかってしまった。');
+    await addMessage('judge', 'これにて閉廷とする。……一つだけ聞いていいか。……いや、やめておく。閉廷。');
 
     const revealAborted = await showReveal(roundData, roundIndex).then(() => false).catch(e => {
       if (e.name === 'AbortError') return true;
