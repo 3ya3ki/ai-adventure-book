@@ -1187,6 +1187,17 @@ const Trial = (() => {
   }
 
   // === Intro screen (tutorial + preload gate) ===
+  const INTRO_TRIVIA = [
+    '💡 2023年、米国の弁護士がAIの架空判例を裁判所に提出し制裁を受けました',
+    '💡 AIの「ハルシネーション」は医学用語の「幻覚」が語源です',
+    '💡 AIは「わかりません」が苦手。知らないことも自信満々に答えます',
+    '💡 裁判官の木槌（ガベル）はアメリカの文化。日本の法廷にはありません',
+    '💡 ChatGPTは架空の学術論文をDOIごと捏造して"引用"したことがあります',
+    '💡 逆転裁判の「異議あり！」は海外版で "Objection!" — 世界共通の法廷用語です',
+    '💡 AIは同じ質問でも毎回違う嘘をつきます。一貫性がないのが特徴です',
+    '💡 世界初のAI弁護士は2023年に登場予定でしたが、法曹界の反発で中止に',
+  ];
+
   function showIntroScreen(preloadPromise) {
     return new Promise(resolve => {
       if (!_chatEl) { resolve(); return; }
@@ -1227,11 +1238,30 @@ const Trial = (() => {
           <button class="trial-intro-start-btn" id="trial-intro-start-btn" disabled>準備中</button>
           <button class="trial-intro-skip-btn" id="trial-intro-skip-btn">スキップして始める →</button>
         </div>
+        <div class="trial-intro-trivia" id="trial-intro-trivia"></div>
       `;
       _chatEl.appendChild(introDiv);
       _chatEl.scrollTop = 0; // always show intro from the top
 
+      // --- Trivia cycling ---
+      const triviaEl = introDiv.querySelector('.trial-intro-trivia');
+      let triviaIdx = Math.floor(Math.random() * INTRO_TRIVIA.length);
+      let triviaTimer = null;
+
+      function showNextTrivia() {
+        if (!triviaEl) return;
+        triviaEl.classList.remove('trial-intro-trivia--in');
+        setTimeout(() => {
+          triviaEl.textContent = INTRO_TRIVIA[triviaIdx % INTRO_TRIVIA.length];
+          triviaIdx++;
+          triviaEl.classList.add('trial-intro-trivia--in');
+        }, 300);
+      }
+      showNextTrivia();
+      triviaTimer = setInterval(showNextTrivia, 3800);
+
       function dismiss() {
+        clearInterval(triviaTimer);
         introDiv.classList.add('trial-intro--out');
         setTimeout(() => {
           if (introDiv.parentNode) introDiv.remove();

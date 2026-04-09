@@ -1035,6 +1035,22 @@
   color: #d4c3b7;
 }
 
+/* Trivia — loading tips */
+.trial-intro-trivia {
+  text-align: center;
+  font-size: 0.76rem;
+  color: #9d8e83;
+  line-height: 1.55;
+  padding: 18px 8px 0;
+  min-height: 2.8em;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.trial-intro-trivia--in {
+  opacity: 1;
+}
+
 /* Responsive */
 @media (min-width: 480px) {
   .trial-intro {
