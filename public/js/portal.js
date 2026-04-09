@@ -7,18 +7,18 @@ const Portal = (() => {
   const INACTIVITY_MS = 60000;
   const ATTRACT_MS    = 12000; // 12s no interaction → attract mode
 
-  // Attract messages — interleaved A (AI知識あり) / B (AI未経験)
+  // Attract messages — 共通×4 / 裁判×3 / ハルシニカ×3
   const ATTRACT_MESSAGES = [
-    { lines: ['AIの嘘を、', '守る。'],                               type: 'A' },
-    { lines: ['AIは正直に、', '嘘をつく'],                           type: 'B' },
-    { lines: ['被告人：', 'AI'],                                     type: 'A' },
-    { lines: ['AIは嘘をつく。', 'あなたは守れる？'],                   type: 'B' },
-    { lines: ['AIは嘘をついている。', 'でも悪意はない'],               type: 'A' },
-    { lines: ['AIって、', '嘘をつくって知ってた？'],                   type: 'B' },
-    { lines: ['静粛に。', '法廷、開廷。'],                            type: 'A' },
-    { lines: ['始まりは嘘。', '終わりは、あなたが決める。'],             type: 'B' },
-    { lines: ['AI好きほど、', '引っかかる罠がある'],                   type: 'A' },
-    { lines: ['AIのこと、よくわからない人ほど、', '向いています'],        type: 'B' },
+    { lines: ['AIは嘘をついている。', 'でも悪意はない'],    type: 'common'     },
+    { lines: ['静粛に。', '法廷、開廷。'],                 type: 'trial'      },
+    { lines: ['嘘と本当の、', '境目がない。'],             type: 'common'     },
+    { lines: ['全部、', '嘘です。'],                      type: 'halucinica' },
+    { lines: ['AIは嘘をつく。', 'あなたは守れる？'],        type: 'common'     },
+    { lines: ['AIの嘘を、', '守る。'],                    type: 'trial'      },
+    { lines: ['AIに悪意はない。', 'だから怖い。'],          type: 'common'     },
+    { lines: ['自信満々に、', '間違っている。'],            type: 'halucinica' },
+    { lines: ['AIは正直に、', '嘘をつく'],                 type: 'trial'      },
+    { lines: ['正しそうな嘘ほど、', '怖い。'],             type: 'halucinica' },
   ];
 
   let _attractTimer    = null;
