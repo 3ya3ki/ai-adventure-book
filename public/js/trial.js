@@ -1248,20 +1248,28 @@ const Trial = (() => {
       let triviaIdx = Math.floor(Math.random() * INTRO_TRIVIA.length);
       let triviaTimer = null;
 
-      function showNextTrivia() {
-        if (!triviaEl) return;
-        triviaEl.classList.remove('trial-intro-trivia--in');
-        setTimeout(() => {
-          triviaEl.textContent = INTRO_TRIVIA[triviaIdx % INTRO_TRIVIA.length];
-          triviaIdx++;
-          triviaEl.classList.add('trial-intro-trivia--in');
-        }, 300);
+      let triviaAbort = false;
+      async function typewriteTrivia(text) {
+        triviaEl.innerHTML = '<span class="trial-intro-trivia-cursor"></span>';
+        for (let i = 0; i < text.length; i++) {
+          if (triviaAbort || !_gameRunning) return;
+          triviaEl.innerHTML = text.slice(0, i + 1) + '<span class="trial-intro-trivia-cursor"></span>';
+          await delay(38);
+        }
+        triviaEl.innerHTML = text;
+      }
+      async function showNextTrivia() {
+        if (triviaAbort || !triviaEl) return;
+        const text = INTRO_TRIVIA[triviaIdx % INTRO_TRIVIA.length];
+        triviaIdx++;
+        await typewriteTrivia(text);
+        if (!triviaAbort) triviaTimer = setTimeout(showNextTrivia, 3200);
       }
       showNextTrivia();
-      triviaTimer = setInterval(showNextTrivia, 3800);
 
       function dismiss() {
-        clearInterval(triviaTimer);
+        triviaAbort = true;
+        clearTimeout(triviaTimer);
         introDiv.classList.add('trial-intro--out');
         setTimeout(() => {
           if (introDiv.parentNode) introDiv.remove();
