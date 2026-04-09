@@ -819,7 +819,7 @@ const Trial = (() => {
 
   async function typewrite(el, text, speed) {
     _skipTypewrite = false;
-    const spd = speed != null ? speed : (_exhibitionMode ? 25 : 32);
+    const spd = speed != null ? speed : (_exhibitionMode ? 35 : 42);
     el.textContent = '';
 
     // Tap / click anywhere in chat area to instantly complete this message
