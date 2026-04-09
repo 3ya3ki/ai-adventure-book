@@ -777,6 +777,16 @@ const Trial = (() => {
   // === Fixed mode uses indices 0 & 1 (サンタ・5秒ルール) ===
   const FIXED_INDICES = [0, 1];
 
+  // === Category hints for theme diversity (6 groups, half-cycle apart per round) ===
+  const CATEGORY_HINTS = [
+    '食べ物・飲み物の迷信',
+    '動物・自然に関する都市伝説',
+    '健康・体に関する俗説',
+    '学習・記憶・脳に関する俗説',
+    '季節・天気・縁起の迷信',
+    '睡眠・時間帯に関する俗説',
+  ];
+
   // === Random round selection with session-based duplicate avoidance ===
   function selectRoundIndices(mode) {
     if (mode !== 'random') return FIXED_INDICES.slice();
@@ -811,6 +821,7 @@ const Trial = (() => {
   let _generation = 0;                  // incremented on init/destroy; guards stale async ops
   let _cancelCurrentInteraction = null; // reject() for pending showDefenseUI / showReveal
   let _skipTypewrite = false;           // tap-to-complete current typewrite animation
+  let _roundCategoryHints = [];         // per-round category hints (pre-computed at init)
 
   // === Utility ===
   function delay(ms) {
@@ -1148,7 +1159,20 @@ const Trial = (() => {
       Array.from({ length: _state.totalRounds }, (_, i) =>
         loadRoundData(i).then(data => {
           // Only write if still the same game session
-          if (_generation === gen) _preloadedData[i] = data;
+          if (_generation === gen) {
+            _preloadedData[i] = data;
+            // Record theme to sessionStorage for cross-session deduplication
+            if (data?.theme) {
+              try {
+                const used = JSON.parse(sessionStorage.getItem('trial-used-themes') || '[]');
+                if (!used.includes(data.theme)) {
+                  used.push(data.theme);
+                  if (used.length > 20) used.shift(); // cap at 20 entries
+                  sessionStorage.setItem('trial-used-themes', JSON.stringify(used));
+                }
+              } catch (e) {}
+            }
+          }
         })
       )
     );
@@ -1162,7 +1186,11 @@ const Trial = (() => {
         const r = await fetch('/api/trial', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'generate_round' }),
+          body: JSON.stringify({
+            action: 'generate_round',
+            theme_hint: _roundCategoryHints[roundIndex] || null,
+            excluded_themes: (() => { try { return JSON.parse(sessionStorage.getItem('trial-used-themes') || '[]'); } catch (e) { return []; } })(),
+          }),
         });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const data = await r.json();
@@ -1450,6 +1478,11 @@ const Trial = (() => {
       _exhibitionMode = options.exhibitionMode || false;
       _fallbackMode = options.fallbackMode || 'fixed';
       _selectedIndices = selectRoundIndices(_fallbackMode);
+      const _baseIdx = Math.floor(Math.random() * CATEGORY_HINTS.length);
+      _roundCategoryHints = [
+        CATEGORY_HINTS[_baseIdx],
+        CATEGORY_HINTS[(_baseIdx + Math.floor(CATEGORY_HINTS.length / 2)) % CATEGORY_HINTS.length],
+      ];
       _gameRunning = true;
       _preloadedData = [];
       _generation++;                  // invalidate any in-flight ops from a previous session
