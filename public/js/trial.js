@@ -1234,11 +1234,15 @@ const Trial = (() => {
           </ol>
           <div class="trial-intro-meta">全${_state.totalRounds}ラウンド・約8分</div>
         </div>
+        <div class="trial-intro-trivia-block">
+          <div class="trial-intro-divider"></div>
+          <div class="trial-intro-trivia-label">裁判豆知識</div>
+          <div class="trial-intro-trivia" id="trial-intro-trivia"></div>
+        </div>
         <div class="trial-intro-footer">
           <button class="trial-intro-start-btn" id="trial-intro-start-btn" disabled>準備中</button>
           <button class="trial-intro-skip-btn" id="trial-intro-skip-btn">スキップして始める →</button>
         </div>
-        <div class="trial-intro-trivia" id="trial-intro-trivia"></div>
       `;
       _chatEl.appendChild(introDiv);
       _chatEl.scrollTop = 0; // always show intro from the top

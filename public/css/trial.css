@@ -1036,12 +1036,25 @@
 }
 
 /* Trivia — loading tips */
+.trial-intro-trivia-block {
+  margin-top: 4px;
+}
+
+.trial-intro-trivia-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #f0bd8f;
+  letter-spacing: 0.16em;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
 .trial-intro-trivia {
   text-align: center;
   font-size: 0.91rem;
   color: #9d8e83;
   line-height: 1.55;
-  padding: 18px 8px 0;
+  padding: 0 4px;
   min-height: 3em;
 }
 
