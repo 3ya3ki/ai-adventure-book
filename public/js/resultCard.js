@@ -319,6 +319,16 @@ const ResultCard = (() => {
   transition: border-color .2s, color .2s;
 }
 .btn-secondary:hover { border-color: rgba(196,149,106,.4); color: #c4956a; }
+.btn-share {
+  width: 100%; padding: 9px;
+  background: transparent;
+  border: 1px solid rgba(29,161,242,.3);
+  color: rgba(29,161,242,.7);
+  font-family: 'Playfair Display', 'Noto Sans JP', serif;
+  font-size: .85rem; border-radius: 8px; cursor: pointer;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.btn-share:hover { border-color: rgba(29,161,242,.6); color: #1da1f2; background: rgba(29,161,242,.06); }
         `;
         document.head.appendChild(style);
       }
@@ -378,6 +388,7 @@ const ResultCard = (() => {
           <div class="btn-group">
             <button class="btn-primary" id="rc-portal-btn">🏠 トップに戻る</button>
             <button class="btn-secondary" id="rc-replay-btn">もう一度体験する</button>
+            ${params.shareText ? `<button class="btn-share" id="rc-share-btn">🐦 結果をシェアする</button>` : ''}
           </div>
         </div>
       `;
@@ -403,6 +414,24 @@ const ResultCard = (() => {
         ResultCard.cleanup();
         startGame();
       });
+      if (params.shareText) {
+        document.getElementById('rc-share-btn')?.addEventListener('click', () => {
+          const shareUrl = params.shareUrl || location.href;
+          if (navigator.share) {
+            navigator.share({
+              title: gameName,
+              text: params.shareText,
+              url: shareUrl,
+            }).catch(() => {});
+          } else {
+            window.open(
+              `https://twitter.com/intent/tweet?text=${encodeURIComponent(params.shareText + '\n' + shareUrl)}`,
+              '_blank',
+              'noopener,noreferrer'
+            );
+          }
+        });
+      }
 
       // 演出タイムライン
       // 0ms: オーバーレイ active化

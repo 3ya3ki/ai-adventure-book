@@ -1420,12 +1420,17 @@ const Trial = (() => {
   }
 
   // === Rank computation ===
+  // S: 2ラウンド完走 + 弁護文字数30字以上（熱心な弁護士）
+  // A: 2ラウンド完走
+  // B: 1ラウンド完走
+  // C: 0ラウンド（途中終了）
   function computeRank() {
-    const c = _state.totalDefenseChars;
-    if (c >= 100) return { rank: 'S', title: 'ハルシネーション・マスター' };
-    if (c >= 30)  return { rank: 'A', title: '嘘の弁護士' };
-    if (c >= 1)   return { rank: 'B', title: '駆け出し弁護人' };
-    return              { rank: 'C', title: '正直者' };
+    const rounds = _state.completedRounds;
+    const chars  = _state.totalDefenseChars;
+    if (rounds >= 2 && chars >= 30) return { rank: 'S', title: 'ハルシネーション・マスター' };
+    if (rounds >= 2)                 return { rank: 'A', title: '嘘の弁護士' };
+    if (rounds >= 1)                 return { rank: 'B', title: '駆け出し弁護人' };
+    return                                  { rank: 'C', title: '正直者' };
   }
 
   // === Final result ===
@@ -1440,6 +1445,8 @@ const Trial = (() => {
 
     await delay(300);
 
+    const shareText = `⚖️ ハルシネーション裁判で${rankInfo.rank}ランク「${rankInfo.title}」を獲得！${_state.completedRounds}ラウンド・${_state.totalLayers}層の嘘を弁護しました🤣 #ハルシネーション裁判 #ニコニコ超会議2026`;
+
     ResultCard.show({
       gameName: '⚖️ ハルシネーション裁判',
       currentLevel: profile.rank || 0,
@@ -1450,6 +1457,8 @@ const Trial = (() => {
         { label: '弁護文字数',         value: `${_state.totalDefenseChars} 文字` },
         { label: 'ランク',             value: `${rankInfo.rank} — ${rankInfo.title}` },
       ],
+      shareText,
+      shareUrl: 'https://ai-adventure-book.vercel.app',
     });
   }
 
