@@ -1362,6 +1362,7 @@ const Trial = (() => {
 
     if (!_gameRunning) return;
 
+    await delay(1600);
     await showCutin('開廷！', 'COURT IN SESSION', CHARS.judge.color);
     if (roundIndex === 0) {
       await addMessage('judge', `これより、${roundData.theme}事件の公判を開廷する。……罪状を読み上げる。（……なお、裁判長は先入観を持っていない。）`);
@@ -1384,7 +1385,7 @@ const Trial = (() => {
       if (!_gameRunning) return;
       const turnData = roundData.turns[t];
 
-      await delay(2000);
+      await delay(1600);
       await showCutin('異議あり！', 'OBJECTION!', CHARS.prosecution.color);
       await addMessage('prosecution', turnData.prosecution);
 
@@ -1394,6 +1395,7 @@ const Trial = (() => {
       });
       if (result === null || !_gameRunning) return;
 
+      await delay(1600);
       await showCutin('証拠を見ろ！', 'TAKE  THAT!', CHARS.defense.color);
       await addMessage('defense', `証拠を提示します——「${result.choice.label}」。${result.freeText ? result.freeText : ''}`);
       _state.totalDefenseChars += result.freeText.length;
@@ -1408,6 +1410,7 @@ const Trial = (() => {
 
     if (!_gameRunning) return;
 
+    await delay(1600);
     await showCutin('閉廷！', 'COURT ADJOURNED', CHARS.judge.color);
     await addMessage('judge', 'これにて閉廷とする。（……一つだけ聞いていいか。……いや、やめておく。）閉廷。');
 
