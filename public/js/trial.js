@@ -1022,6 +1022,10 @@ const Trial = (() => {
           <button class="trial-submit-btn" id="trial-submit-btn" style="display:none">異議あり！　OBJECTION!</button>
         </div>
       `;
+      // 選択肢パネルの展開でチャット領域が縮むため、描画後に最下部へ再スクロール
+      requestAnimationFrame(() => {
+        if (_chatEl) _chatEl.scrollTop = _chatEl.scrollHeight;
+      });
 
       _inputEl.querySelectorAll('.trial-choice-card').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1380,7 +1384,7 @@ const Trial = (() => {
       if (!_gameRunning) return;
       const turnData = roundData.turns[t];
 
-      await delay(800);
+      await delay(2000);
       await showCutin('異議あり！', 'OBJECTION!', CHARS.prosecution.color);
       await addMessage('prosecution', turnData.prosecution);
 
