@@ -29,6 +29,8 @@ const Portal = (() => {
   let _onPortalScreen  = true;
 
   // --- Fallback mode (Fixed / Random) ---
+  // exhibitionMode のデフォルトは 'random'（来場者に毎回違うテーマを提供）
+  // 通常モードのデフォルトは 'fixed'（サンタ・5秒ルール）
   let _fallbackMode = sessionStorage.getItem('trial-fallback-mode') || 'fixed';
   let _tapSequence = [];
   let _tapTimer = null;
@@ -292,6 +294,12 @@ const Portal = (() => {
     init() {
       const params = new URLSearchParams(window.location.search);
       _exhibitionMode = params.get('mode') === 'exhibition';
+
+      // exhibitionMode では fallback をランダムにデフォルト設定
+      // （ユーザーがシークレットパネルで変更した場合はそちらを優先）
+      if (_exhibitionMode && !sessionStorage.getItem('trial-fallback-mode')) {
+        _fallbackMode = 'random';
+      }
 
       buildPortal();
       showScreen('screen-portal');
