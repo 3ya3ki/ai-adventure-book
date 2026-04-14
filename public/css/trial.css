@@ -1085,3 +1085,17 @@
     font-size: 0.93rem;
   }
 }
+
+/* === Click-to-advance hint (▼) === */
+.trial-advance-hint {
+  display: inline-block;
+  margin-left: 0.5em;
+  font-size: 0.9em;
+  color: inherit;
+  animation: trial-advance-blink 1s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes trial-advance-blink {
+  0%, 100% { opacity: 0.2; transform: translateY(0); }
+  50%      { opacity: 0.9; transform: translateY(2px); }
+}

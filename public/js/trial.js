@@ -809,12 +809,12 @@ const Trial = (() => {
   }
 
   // === Tempo constants ===
-  const POST_MSG_DELAY     = 350;   // メッセージ表示完了後の待機
-  const CORNER_DELAY       = 800;   // 動揺セリフ後の待機
+  const POST_MSG_DELAY     = 350;   // 現在未使用、click-to-advance 設計に変更
+  const CORNER_DELAY       = 800;   // 現在未使用、click-to-advance 設計に変更
   const CUTIN_HOLD         = 1400;  // カットイン表示時間
   const PRE_CUTIN_DELAY    = 1100;  // カットイン直前の溜め
-  const TYPEWRITER_NORMAL  = 38;    // 通常モードの1文字あたりms
-  const TYPEWRITER_EXHIBIT = 30;    // 展示モードの1文字あたりms
+  const TYPEWRITER_NORMAL  = 80;    // 通常モードの1文字あたりms（DQ風）
+  const TYPEWRITER_EXHIBIT = 70;    // 展示モードの1文字あたりms（DQ風）
 
   // === Internal state ===
   let _state = null;
@@ -840,8 +840,29 @@ const Trial = (() => {
     return new Promise(r => setTimeout(r, ms));
   }
 
+  // waitForAdvanceTap: タップされるまで永久に待つ。メッセージ末尾に点滅▼を表示。
+  function waitForAdvanceTap(msgDiv) {
+    return new Promise(resolve => {
+      if (!_gameRunning) return resolve();
+      const hint = document.createElement('span');
+      hint.className = 'trial-advance-hint';
+      hint.textContent = '▼';
+      if (msgDiv) {
+        const bubble = msgDiv.querySelector('.trial-bubble');
+        if (bubble) bubble.appendChild(hint);
+      }
+      if (_chatEl) _chatEl.scrollTop = _chatEl.scrollHeight;
+      const settle = () => {
+        if (hint.parentNode) hint.remove();
+        if (_delayResolver === settle) _delayResolver = null;
+        resolve();
+      };
+      _delayResolver = settle;
+    });
+  }
+
   // skippableDelay: タップで _delayResolver() が呼ばれると即座に resolve する遅延。
-  // メッセージ表示完了後の自動進行待ちで使用。
+  // カットイン / pre-cutin 溜めで使用。
   function skippableDelay(ms) {
     return new Promise(resolve => {
       if (!_gameRunning) return resolve();
@@ -946,7 +967,7 @@ const Trial = (() => {
     _chatEl.scrollTop = _chatEl.scrollHeight;
     const textEl = div.querySelector('.trial-bubble-text');
     await typewrite(textEl, text);
-    if (_gameRunning) await skippableDelay(POST_MSG_DELAY);
+    if (_gameRunning) await waitForAdvanceTap(div);
   }
 
   // === Cut-in animation ===
@@ -1038,7 +1059,7 @@ const Trial = (() => {
     _chatEl.scrollTop = _chatEl.scrollHeight;
     const textEl = div.querySelector('.trial-bubble-text');
     await typewrite(textEl, text, 80);
-    if (_gameRunning) await skippableDelay(CORNER_DELAY);
+    if (_gameRunning) await waitForAdvanceTap(div);
   }
 
   // === Defense UI — returns Promise<{choice, choiceIdx, freeText}> ===
