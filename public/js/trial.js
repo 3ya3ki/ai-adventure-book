@@ -808,6 +808,14 @@ const Trial = (() => {
     return selected;
   }
 
+  // === Tempo constants ===
+  const POST_MSG_DELAY     = 350;   // メッセージ表示完了後の待機
+  const CORNER_DELAY       = 800;   // 動揺セリフ後の待機
+  const CUTIN_HOLD         = 1400;  // カットイン表示時間
+  const PRE_CUTIN_DELAY    = 1100;  // カットイン直前の溜め
+  const TYPEWRITER_NORMAL  = 38;    // 通常モードの1文字あたりms
+  const TYPEWRITER_EXHIBIT = 30;    // 展示モードの1文字あたりms
+
   // === Internal state ===
   let _state = null;
   let _chatEl = null;
@@ -821,6 +829,10 @@ const Trial = (() => {
   let _generation = 0;                  // incremented on init/destroy; guards stale async ops
   let _cancelCurrentInteraction = null; // reject() for pending showDefenseUI / showReveal
   let _skipTypewrite = false;           // tap-to-complete current typewrite animation
+  let _typewriting = false;             // typewrite 進行中フラグ（advance タップとの判別用）
+  let _delayResolver = null;            // 進行中の skippableDelay の resolve ハンドル
+  let _advanceTapEnabled = false;       // タップで delay/cutin スキップを許可するフラグ
+  let _screenTapHandler = null;         // screen-trial に登録した click ハンドラ参照
   let _roundCategoryHints = [];         // per-round category hints (pre-computed at init)
 
   // === Utility ===
@@ -828,34 +840,59 @@ const Trial = (() => {
     return new Promise(r => setTimeout(r, ms));
   }
 
+  // skippableDelay: タップで _delayResolver() が呼ばれると即座に resolve する遅延。
+  // メッセージ表示完了後の自動進行待ちで使用。
+  function skippableDelay(ms) {
+    return new Promise(resolve => {
+      if (!_gameRunning) return resolve();
+      const timer = setTimeout(() => {
+        if (_delayResolver === settle) _delayResolver = null;
+        resolve();
+      }, ms);
+      const settle = () => {
+        clearTimeout(timer);
+        if (_delayResolver === settle) _delayResolver = null;
+        resolve();
+      };
+      _delayResolver = settle;
+    });
+  }
+
+  // screen-trial へのグローバル click ハンドラ。
+  // typewrite 中は _skipTypewrite を立て、自動進行待ち中は _delayResolver を発火する。
+  function handleScreenTap(e) {
+    if (!_advanceTapEnabled || !_gameRunning) return;
+    // 選択肢ボタン・リスタートボタン等の interactive 要素では発火させない
+    if (e.target.closest('button, input, select, textarea, .trial-defense-area, .result-card')) return;
+    if (_typewriting) {
+      _skipTypewrite = true;
+    } else if (_delayResolver) {
+      _delayResolver();
+    }
+  }
+
   async function typewrite(el, text, speed) {
     _skipTypewrite = false;
-    const spd = speed != null ? speed : (_exhibitionMode ? 35 : 42);
+    _typewriting = true;
+    const spd = speed != null ? speed : (_exhibitionMode ? TYPEWRITER_EXHIBIT : TYPEWRITER_NORMAL);
     el.textContent = '';
 
-    // Tap / click anywhere in chat area to instantly complete this message
-    const skipOnTap = () => { _skipTypewrite = true; };
-    if (_chatEl) _chatEl.addEventListener('click', skipOnTap, { once: true });
-
-    for (let i = 0; i < text.length; i++) {
-      if (!_gameRunning) {
-        if (_chatEl) _chatEl.removeEventListener('click', skipOnTap);
-        return;
-      }
-      if (_skipTypewrite) {
-        el.textContent = text;
-        if (_chatEl) {
-          _chatEl.removeEventListener('click', skipOnTap);
-          _chatEl.scrollTop = _chatEl.scrollHeight;
+    try {
+      for (let i = 0; i < text.length; i++) {
+        if (!_gameRunning) return;
+        if (_skipTypewrite) {
+          el.textContent = text;
+          if (_chatEl) _chatEl.scrollTop = _chatEl.scrollHeight;
+          return;
         }
-        return;
+        el.textContent += text[i];
+        // Throttle scroll to every 5 chars — avoids forced reflow on every keystroke
+        if (i % 5 === 0 && _chatEl) _chatEl.scrollTop = _chatEl.scrollHeight;
+        await delay(spd);
       }
-      el.textContent += text[i];
-      // Throttle scroll to every 5 chars — avoids forced reflow on every keystroke
-      if (i % 5 === 0 && _chatEl) _chatEl.scrollTop = _chatEl.scrollHeight;
-      await delay(spd);
+    } finally {
+      _typewriting = false;
     }
-    if (_chatEl) _chatEl.removeEventListener('click', skipOnTap);
   }
 
   // === UI construction ===
@@ -909,7 +946,7 @@ const Trial = (() => {
     _chatEl.scrollTop = _chatEl.scrollHeight;
     const textEl = div.querySelector('.trial-bubble-text');
     await typewrite(textEl, text);
-    if (_gameRunning) await delay(300);
+    if (_gameRunning) await skippableDelay(POST_MSG_DELAY);
   }
 
   // === Cut-in animation ===
@@ -934,7 +971,7 @@ const Trial = (() => {
         ${enPart}
       </div>`;
     el.classList.add('trial-cutin--active');
-    await delay(1750);
+    await skippableDelay(CUTIN_HOLD);
     if (!_gameRunning) return;
     el.classList.remove('trial-cutin--active');
     el.innerHTML = '';
@@ -989,7 +1026,7 @@ const Trial = (() => {
     _chatEl.scrollTop = _chatEl.scrollHeight;
     const textEl = div.querySelector('.trial-bubble-text');
     await typewrite(textEl, text, 80);
-    if (_gameRunning) await delay(900);
+    if (_gameRunning) await skippableDelay(CORNER_DELAY);
   }
 
   // === Defense UI — returns Promise<{choice, choiceIdx, freeText}> ===
@@ -997,6 +1034,9 @@ const Trial = (() => {
     return new Promise((resolve, reject) => {
       if (!_inputEl) { reject(new DOMException('aborted', 'AbortError')); return; }
       let selectedIdx = null;
+
+      // 選択肢パネル表示中は背景タップで進行しないようにする
+      _advanceTapEnabled = false;
 
       // Register cancel hook so destroy() can unblock this pending Promise
       _cancelCurrentInteraction = () => reject(new DOMException('aborted', 'AbortError'));
@@ -1043,6 +1083,7 @@ const Trial = (() => {
         if (selectedIdx === null) return;
         const freeText = (document.getElementById('trial-free-text').value || '').trim();
         _cancelCurrentInteraction = null;
+        _advanceTapEnabled = true;
         _inputEl.innerHTML = '';
         resolve({ choice: turnData.choices[selectedIdx], choiceIdx: selectedIdx, freeText });
       });
@@ -1052,6 +1093,7 @@ const Trial = (() => {
   // === Reveal screen ===
   async function showReveal(roundData, roundIndex) {
     if (!_gameRunning || !_chatEl) return;
+    _advanceTapEnabled = false; // reveal画面は専用ボタンで進む
     _inputEl.innerHTML = '';
     await delay(400);
 
@@ -1109,6 +1151,7 @@ const Trial = (() => {
       _cancelCurrentInteraction = () => reject(new DOMException('aborted', 'AbortError'));
       document.getElementById('trial-reveal-next').addEventListener('click', () => {
         _cancelCurrentInteraction = null;
+        _advanceTapEnabled = true;
         resolve();
       }, { once: true });
     });
@@ -1362,7 +1405,7 @@ const Trial = (() => {
 
     if (!_gameRunning) return;
 
-    await delay(1600);
+    await skippableDelay(PRE_CUTIN_DELAY);
     await showCutin('開廷！', 'COURT IN SESSION', CHARS.judge.color);
     if (roundIndex === 0) {
       await addMessage('judge', `これより、${roundData.theme}事件の公判を開廷する。……罪状を読み上げる。（……なお、裁判長は先入観を持っていない。）`);
@@ -1385,7 +1428,7 @@ const Trial = (() => {
       if (!_gameRunning) return;
       const turnData = roundData.turns[t];
 
-      await delay(1600);
+      await skippableDelay(PRE_CUTIN_DELAY);
       await showCutin('異議あり！', 'OBJECTION!', CHARS.prosecution.color);
       await addMessage('prosecution', turnData.prosecution);
 
@@ -1395,7 +1438,7 @@ const Trial = (() => {
       });
       if (result === null || !_gameRunning) return;
 
-      await delay(1600);
+      await skippableDelay(PRE_CUTIN_DELAY);
       await showCutin('証拠を見ろ！', 'TAKE  THAT!', CHARS.defense.color);
       await addMessage('defense', `証拠を提示します——「${result.choice.label}」。${result.freeText ? result.freeText : ''}`);
       _state.totalDefenseChars += result.freeText.length;
@@ -1410,7 +1453,7 @@ const Trial = (() => {
 
     if (!_gameRunning) return;
 
-    await delay(1600);
+    await skippableDelay(PRE_CUTIN_DELAY);
     await showCutin('閉廷！', 'COURT ADJOURNED', CHARS.judge.color);
     await addMessage('judge', 'これにて閉廷とする。（……一つだけ聞いていいか。……いや、やめておく。）閉廷。');
 
@@ -1503,6 +1546,16 @@ const Trial = (() => {
       _preloadedData = [];
       _generation++;                  // invalidate any in-flight ops from a previous session
       _cancelCurrentInteraction = null;
+      _delayResolver = null;
+      _typewriting = false;
+      _advanceTapEnabled = true;
+
+      // screen-trial への click ハンドラを1度だけ登録
+      const screenEl = document.getElementById('screen-trial');
+      if (screenEl && !_screenTapHandler) {
+        _screenTapHandler = handleScreenTap;
+        screenEl.addEventListener('click', _screenTapHandler);
+      }
       _state = {
         totalRounds: 2,
         completedRounds: 0,
@@ -1527,15 +1580,28 @@ const Trial = (() => {
     destroy() {
       _generation++;                  // invalidate any in-flight ops (preload, timers, etc.)
       _gameRunning = false;
+      _advanceTapEnabled = false;
+      _typewriting = false;
       _preloadedData = [];
       // Unblock any pending showDefenseUI / showReveal so their Promises settle
       if (_cancelCurrentInteraction) {
         _cancelCurrentInteraction();
         _cancelCurrentInteraction = null;
       }
+      // Unblock any pending skippableDelay
+      if (_delayResolver) {
+        _delayResolver();
+        _delayResolver = null;
+      }
       stopTimer();
       const container = document.getElementById('screen-trial');
-      if (container) container.innerHTML = '';
+      if (container) {
+        if (_screenTapHandler) {
+          container.removeEventListener('click', _screenTapHandler);
+          _screenTapHandler = null;
+        }
+        container.innerHTML = '';
+      }
       _chatEl = null;
       _inputEl = null;
       _state = null;
