@@ -215,8 +215,10 @@ function startTimer() {
   if (S.iv) clearInterval(S.iv);
   S.iv = setInterval(() => {
     S.timer--;
-    el.textContent = fmt(S.timer);
-    if (S.timer <= 60) el.classList.add('warn');
+    if (el) {
+      el.textContent = fmt(S.timer);
+      if (S.timer <= 60) el.classList.add('warn');
+    }
     if (S.timer <= 0) { clearInterval(S.iv); endExplore(); }
   }, 1000);
 }
@@ -324,6 +326,22 @@ async function loadArticle(keyword) {
     if (fallback) {
       S.cache[fallbackKw] = fallback;
       renderArticle(fallback);
+    } else {
+      // DB未ロード時のインライン記事（ブランク画面防止）
+      renderArticle({
+        title: keyword,
+        infobox: null,
+        toc: ['概要', '特徴', '影響'],
+        sections: [
+          { heading: '概要', content: '<p class="wiki-p">この記事はAIによるハルシネーション（架空の情報）です。<a class="int-link" data-navigate="AIハルシネーション">AIハルシネーション</a>とは、AIが事実のように見える架空の情報を生成する現象を指します。2023年に<a class="int-link" data-navigate="国際ハルシネーション学会">国際ハルシネーション学会</a>が発表した報告書によれば、この現象は年間47,382件の架空引用文献を生み出しているとされています（この数字自体もハルシネーションです）。</p>' },
+          { heading: '特徴', content: '<p class="wiki-p">ハルシニカに掲載されるすべての情報は<a class="int-link" data-navigate="もっともらしい嘘">もっともらしい嘘</a>で構成されています。具体的な数値、実在しない研究者名、架空の論文などが含まれており、一見すると本物の百科事典のように見えます。</p>' },
+          { heading: '影響', content: '<p class="wiki-p">ハルシニカは<a class="int-link" data-navigate="AIリテラシー">AIリテラシー</a>の向上に貢献しているとされています。AIが生成する情報を批判的に読む能力を養うための教育ツールとして、各地の機関で採用されています（この記述もハルシネーションです）。</p>' }
+        ],
+        footnotes: ['架空の引用1: 山田太郎著「ハルシネーション概論」嘘出版社, 2023, p.42', '架空の引用2: AIハルシネーション研究所「年次報告書2023」'],
+        categories: ['AIハルシネーション', '架空百科事典', 'もっともらしい嘘'],
+        related: ['AIハルシネーション', 'もっともらしい嘘', 'AIリテラシー', '国際ハルシネーション学会'],
+        updated: '2024年4月1日 (嘘) 00:00 UTC'
+      });
     }
     _updateCounters();
     sw('screen-article');
