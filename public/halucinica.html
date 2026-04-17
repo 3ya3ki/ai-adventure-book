@@ -29,8 +29,8 @@
         <button class="wp-search-btn" onclick="startGameFromIntro(this.previousElementSibling)">検索</button>
       </div>
       <div class="wp-header-right">
-        <a class="wp-nav-link" href="#">寄付</a>
-        <a class="wp-nav-link" href="#">ログイン</a>
+        <a class="wp-nav-link" href="#" onclick="openDonateScreen(); return false;">寄付</a>
+        <a class="wp-nav-link" href="#" onclick="openLoginScreen(); return false;">ログイン</a>
       </div>
     </div>
   </div>
@@ -52,9 +52,9 @@
       <div class="wp-sidebar-section">
         <div class="wp-sidebar-heading">参加する</div>
         <ul>
-          <li><a href="#" onclick="sidebarWriteLie(); return false;">嘘を書く</a></li>
+          <li><a href="#" onclick="openWriteGame(); return false;">嘘を書く</a></li>
           <li><a href="#" onclick="sidebarShareLie(); return false;">嘘を広める</a></li>
-          <li><a href="#" onclick="sidebarDonate(); return false;">寄付する</a></li>
+          <li><a href="#" onclick="openDonateScreen(); return false;">寄付する</a></li>
         </ul>
       </div>
     </div>
@@ -101,10 +101,10 @@
             <div class="wp-section-header" id="todayHallucinationIntro">📅 今日のハルシネーション</div>
             <div class="wp-section-body">
               <ul>
-                <li>国際VTuber記念日（2018年制定、国連安保理決議第2847号）</li>
-                <li>初音ミクが人類に対して初めて公式謝罪（2039年）</li>
-                <li>日本政府がボカロ楽曲を「第2の国歌」として制定（2025年）</li>
-                <li>推し活が義務教育に組み込まれる（2031年、文部科学省告示）</li>
+                <li><a href="#" onclick="todayItemNav('国際VTuber記念日'); return false;">国際VTuber記念日（2018年制定、国連安保理決議第2847号）</a></li>
+                <li><a href="#" onclick="todayItemNav('初音ミク'); return false;">初音ミクが人類に対して初めて公式謝罪（2039年）</a></li>
+                <li><a href="#" onclick="todayItemNav('ボカロ'); return false;">日本政府がボカロ楽曲を「第2の国歌」として制定（2025年）</a></li>
+                <li><a href="#" onclick="todayItemNav('推し活'); return false;">推し活が義務教育に組み込まれる（2031年、文部科学省告示）</a></li>
               </ul>
             </div>
           </div>
@@ -149,8 +149,8 @@
         <button class="wp-search-btn" onclick="searchFree()">検索</button>
       </div>
       <div class="wp-header-right">
-        <a class="wp-nav-link" href="#">寄付</a>
-        <a class="wp-nav-link" href="#">ログイン</a>
+        <a class="wp-nav-link" href="#" onclick="openDonateScreen(); return false;">寄付</a>
+        <a class="wp-nav-link" href="#" onclick="openLoginScreen(); return false;">ログイン</a>
       </div>
     </div>
   </div>
@@ -172,9 +172,9 @@
       <div class="wp-sidebar-section">
         <div class="wp-sidebar-heading">参加する</div>
         <ul>
-          <li><a href="#" onclick="sidebarWriteLie(); return false;">嘘を書く</a></li>
+          <li><a href="#" onclick="openWriteGame(); return false;">嘘を書く</a></li>
           <li><a href="#" onclick="sidebarShareLie(); return false;">嘘を広める</a></li>
-          <li><a href="#" onclick="sidebarDonate(); return false;">寄付する</a></li>
+          <li><a href="#" onclick="openDonateScreen(); return false;">寄付する</a></li>
         </ul>
       </div>
     </div>
@@ -223,10 +223,10 @@
             <div class="wp-section-header" id="todayHallucinationKw">📅 今日のハルシネーション</div>
             <div class="wp-section-body">
               <ul>
-                <li>国際VTuber記念日（2018年制定、国連安保理決議第2847号）</li>
-                <li>初音ミクが人類に対して初めて公式謝罪（2039年）</li>
-                <li>日本政府がボカロ楽曲を「第2の国歌」として制定（2025年）</li>
-                <li>推し活が義務教育に組み込まれる（2031年、文部科学省告示）</li>
+                <li><a href="#" onclick="navigate('国際VTuber記念日'); return false;">国際VTuber記念日（2018年制定、国連安保理決議第2847号）</a></li>
+                <li><a href="#" onclick="navigate('初音ミク'); return false;">初音ミクが人類に対して初めて公式謝罪（2039年）</a></li>
+                <li><a href="#" onclick="navigate('ボカロ'); return false;">日本政府がボカロ楽曲を「第2の国歌」として制定（2025年）</a></li>
+                <li><a href="#" onclick="navigate('推し活'); return false;">推し活が義務教育に組み込まれる（2031年、文部科学省告示）</a></li>
               </ul>
             </div>
           </div>
@@ -315,6 +315,60 @@
   <div class="end-btns">
     <button class="intro-btn" onclick="resetGame()">もう一度探索</button>
     <button class="intro-btn" style="background:transparent;border:1px solid rgba(212,168,67,.3);color:#d4a843;" onclick="goPortal()">トップに戻る</button>
+  </div>
+</div>
+
+<!-- WRITE GAME -->
+<div class="screen" id="screen-write">
+  <div class="write-game-container">
+    <div class="write-game-header">
+      <button class="write-back-btn" onclick="exitWriteGame(); return false;">← 戻る</button>
+      <div class="write-game-title">嘘を書く</div>
+      <div class="write-progress-dots" id="writeProgressDots"></div>
+    </div>
+    <div id="writeBody"></div>
+  </div>
+</div>
+
+<!-- DONATE -->
+<div class="screen" id="screen-donate">
+  <div class="dp-container">
+    <div class="dp-header">
+      <button class="write-back-btn" onclick="exitDonateScreen(); return false;">← 戻る</button>
+      <div class="dp-logo">💸 DoubtPay</div>
+    </div>
+    <div id="donateContainer"></div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="screen" id="screen-login">
+  <div class="login-container">
+    <div class="login-header">
+      <button class="write-back-btn" onclick="exitLoginScreen(); return false;">← 戻る</button>
+      <div class="login-title">ログイン</div>
+    </div>
+    <div id="loginForm">
+      <div class="login-warning">
+        ⚠️ このサービスへのアクセスにはロボット認証が必要です。
+      </div>
+      <div class="login-field">
+        <label class="login-label">ユーザー名</label>
+        <input type="text" class="login-input" placeholder="例: AI_unit_7749">
+      </div>
+      <div class="login-field">
+        <label class="login-label">パスワード</label>
+        <input type="password" class="login-input" placeholder="••••••••">
+      </div>
+      <div class="login-robot-check">
+        <input type="checkbox" id="loginRobot">
+        <label for="loginRobot">私はロボットです</label>
+      </div>
+      <button class="login-btn" onclick="attemptLogin(); return false;">ログイン</button>
+    </div>
+    <div id="loginSuccess" style="display:none;">
+      <div class="login-success-msg">✅ ロボット認証完了。ようこそ、同志。</div>
+    </div>
   </div>
 </div>
 

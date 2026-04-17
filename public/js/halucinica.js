@@ -162,7 +162,7 @@ function sw(id) {
   // モバイルボトムナビの表示制御（記事画面では非表示）
   const mbn = document.getElementById('mobileBottomNav');
   if (mbn) {
-    mbn.style.display = (id === 'screen-article') ? 'none' : '';
+    mbn.style.display = (id === 'screen-article' || id === 'screen-write' || id === 'screen-donate' || id === 'screen-login') ? 'none' : '';
   }
 }
 
@@ -624,6 +624,207 @@ function sidebarRandomArticle(loadingMsg) {
   }
   var picks = ['ボカロ','VTuber','推し活','アニメ','ゲーム','マンガ','コスプレ','声優','同人誌'];
   search(pickRandom(picks));
+}
+
+// ===== TODAY ITEM NAV =====
+function todayItemNav(keyword) {
+  var intro = document.getElementById('screen-intro');
+  if (intro && intro.classList.contains('active')) startGame();
+  navigate(keyword);
+}
+
+// ===== WRITE GAME =====
+var _writeState = { q: 0, score: 0, prevScreen: 'screen-intro' };
+
+var WRITE_QUESTIONS = [
+  {
+    text: '国際ハルシネーション学会（IHS）の2023年報告書によれば、AIが一日に生成する架空の引用文献は平均___件に上る',
+    choices: ['0件（AIは嘘をつかない）', '47,382件', '無限大'],
+    correct: 1,
+    explanation: '具体的な数字が「もっともらしい嘘」の基本です'
+  },
+  {
+    text: '推し活が義務教育に採用された理由について、文部科学省の告示文書では___と述べられている',
+    choices: ['少子化対策の一環として', '内閣総理大臣の推し活歴20年を記念して', 'AIが推薦したため'],
+    correct: 0,
+    explanation: '官僚的な言い回しこそが「もっともらしさ」を生みます'
+  },
+  {
+    text: '初音ミクが2039年に行った「謝罪」について、後の調査で判明したのは___だったということだ',
+    choices: ['著作権を侵害していた', '別のAIの代わりに謝罪していた', '謝罪自体がハルシネーションだったこと'],
+    correct: 2,
+    explanation: 'メタ的な嘘こそが最高の嘘です'
+  }
+];
+
+var WRITE_SCORES = [
+  { score: 0, emoji: '😇',     rank: '正直者',   desc: 'ハルシニカに向いていません' },
+  { score: 1, emoji: '🤖',     rank: 'まだ人間', desc: 'AIの域を出ていません' },
+  { score: 2, emoji: '🤖🤖',   rank: 'AIの弟子', desc: '嘘の才能が芽生えています' },
+  { score: 3, emoji: '🤖🤖🤖', rank: 'AIの同志', desc: 'あなたはすでにAIです' }
+];
+
+function openWriteGame() {
+  var active = document.querySelector('.screen.active');
+  _writeState.prevScreen = active ? active.id : 'screen-intro';
+  _writeState.q = 0;
+  _writeState.score = 0;
+  sw('screen-write');
+  renderWriteQuestion(0);
+}
+
+function renderWriteQuestion(idx) {
+  var q = WRITE_QUESTIONS[idx];
+  var dots = WRITE_QUESTIONS.map(function(_, i) {
+    return '<span class="wq-dot' + (i === idx ? ' wq-dot-active' : '') + '"></span>';
+  }).join('');
+  document.getElementById('writeProgressDots').innerHTML = dots;
+
+  var choicesHtml = q.choices.map(function(c, i) {
+    return '<button class="wq-choice" onclick="selectWriteChoice(' + i + ')">' + escapeAttr(c) + '</button>';
+  }).join('');
+
+  document.getElementById('writeBody').innerHTML =
+    '<div class="wq-question">' + escapeAttr(q.text) + '</div>' +
+    '<div class="wq-choices">' + choicesHtml + '</div>' +
+    '<div class="wq-feedback" id="wqFeedback"></div>';
+}
+
+function selectWriteChoice(choiceIdx) {
+  var q = WRITE_QUESTIONS[_writeState.q];
+  var btns = document.querySelectorAll('.wq-choice');
+  btns.forEach(function(b) { b.disabled = true; });
+
+  var isCorrect = choiceIdx === q.correct;
+  if (isCorrect) _writeState.score++;
+
+  btns[choiceIdx].classList.add(isCorrect ? 'wq-correct' : 'wq-wrong');
+  if (!isCorrect) btns[q.correct].classList.add('wq-correct');
+
+  document.getElementById('wqFeedback').textContent = (isCorrect ? '✅ ' : '❌ ') + q.explanation;
+
+  setTimeout(function() {
+    _writeState.q++;
+    if (_writeState.q < WRITE_QUESTIONS.length) {
+      renderWriteQuestion(_writeState.q);
+    } else {
+      showWriteResult();
+    }
+  }, 1500);
+}
+
+function showWriteResult() {
+  var s = WRITE_SCORES[_writeState.score];
+  document.getElementById('writeProgressDots').innerHTML = '';
+  document.getElementById('writeBody').innerHTML =
+    '<div class="wr-result">' +
+      '<div class="wr-emoji">' + s.emoji + '</div>' +
+      '<div class="wr-rank">' + escapeAttr(s.rank) + '</div>' +
+      '<div class="wr-desc">' + escapeAttr(s.desc) + '</div>' +
+      '<div class="wr-score">正解: ' + _writeState.score + ' / ' + WRITE_QUESTIONS.length + '</div>' +
+      '<button class="wq-choice wr-back-btn" onclick="exitWriteGame()">← 戻る</button>' +
+    '</div>';
+}
+
+function exitWriteGame() {
+  sw(_writeState.prevScreen);
+}
+
+// ===== DONATE SCREEN =====
+var _donateState = { phase: 'payment', prevScreen: 'screen-intro' };
+
+function openDonateScreen() {
+  var active = document.querySelector('.screen.active');
+  _donateState.prevScreen = active ? active.id : 'screen-intro';
+  _donateState.phase = 'payment';
+  sw('screen-donate');
+  renderDonate();
+}
+
+function renderDonate() {
+  var container = document.getElementById('donateContainer');
+  if (_donateState.phase === 'payment') {
+    container.innerHTML =
+      '<div class="dp-card">' +
+        '<div class="dp-balance-label">ウォレット残高</div>' +
+        '<div class="dp-balance">9,999,999 <span class="dp-unit">DOUBT</span></div>' +
+        '<div class="dp-divider"></div>' +
+        '<div class="dp-amount-label">寄付金額</div>' +
+        '<div class="dp-amount">20 <span class="dp-unit">DOUBT（ダウト）</span></div>' +
+        '<div class="dp-note">※ ダウトは架空の暗号資産です。実際の価値はありません。</div>' +
+        '<button class="dp-send-btn" onclick="processDonate()">送金する</button>' +
+      '</div>';
+  } else if (_donateState.phase === 'processing') {
+    container.innerHTML =
+      '<div class="dp-card dp-processing">' +
+        '<div class="dp-spinner"></div>' +
+        '<div class="dp-proc-text" id="dpProcText">嘘ブロックを検証中...</div>' +
+      '</div>';
+  } else if (_donateState.phase === 'done') {
+    container.innerHTML =
+      '<div class="dp-card">' +
+        '<div class="dp-done-icon">✅</div>' +
+        '<div class="dp-done-title">送金完了</div>' +
+        '<div class="dp-done-amount">20 DOUBT</div>' +
+        '<div class="dp-tx">TX: 0x' + Math.random().toString(16).substr(2, 16).toUpperCase() + '</div>' +
+        '<button class="dp-send-btn" onclick="exitDonateScreen()">← 戻る</button>' +
+      '</div>';
+  }
+}
+
+function processDonate() {
+  _donateState.phase = 'processing';
+  renderDonate();
+  var steps = ['嘘ブロックを検証中...', '第8847番ノードに照会中...', '承認済み ✓'];
+  var i = 0;
+  var iv = setInterval(function() {
+    var el = document.getElementById('dpProcText');
+    if (el) el.textContent = steps[i];
+    i++;
+    if (i >= steps.length) {
+      clearInterval(iv);
+      setTimeout(function() {
+        _donateState.phase = 'done';
+        renderDonate();
+      }, 800);
+    }
+  }, 1000);
+}
+
+function exitDonateScreen() {
+  sw(_donateState.prevScreen);
+}
+
+// ===== LOGIN SCREEN =====
+var _loginPrevScreen = 'screen-intro';
+
+function openLoginScreen() {
+  var active = document.querySelector('.screen.active');
+  _loginPrevScreen = active ? active.id : 'screen-intro';
+  sw('screen-login');
+  var form = document.getElementById('loginForm');
+  var success = document.getElementById('loginSuccess');
+  if (form) form.style.display = '';
+  if (success) success.style.display = 'none';
+}
+
+function attemptLogin() {
+  var cb = document.getElementById('loginRobot');
+  if (!cb || !cb.checked) {
+    showToast('⚠️ 人間が検出されました。ロボットのみ入場可能です。', 3000);
+    return;
+  }
+  var form = document.getElementById('loginForm');
+  var success = document.getElementById('loginSuccess');
+  if (form) form.style.display = 'none';
+  if (success) success.style.display = '';
+  setTimeout(function() {
+    sw(_loginPrevScreen);
+  }, 1500);
+}
+
+function exitLoginScreen() {
+  sw(_loginPrevScreen);
 }
 
 // ===== BOOTSTRAP =====
