@@ -184,12 +184,14 @@ function startGame(initialKeyword) {
 
   // Reset timer display
   const el = document.getElementById('timerVal');
-  if (S.timer > 0) {
-    el.textContent = fmt(S.timer);
-    el.classList.remove('warn');
-    el.parentElement.style.display = '';
-  } else {
-    el.parentElement.style.display = 'none';
+  if (el) {
+    if (S.timer > 0) {
+      el.textContent = fmt(S.timer);
+      el.classList.remove('warn');
+      el.parentElement.style.display = '';
+    } else {
+      el.parentElement.style.display = 'none';
+    }
   }
 
   // intro画面の検索バーからキーワード付きで呼ばれた場合、直接検索
