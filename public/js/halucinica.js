@@ -628,6 +628,28 @@ function sidebarRandomArticle(loadingMsg) {
   search(pickRandom(picks));
 }
 
+function sidebarNewArticle() {
+  var introScreen = document.getElementById('screen-intro');
+  if (introScreen && introScreen.classList.contains('active')) {
+    startGame();
+  }
+  var picks = [
+    '国際ハルシネーション学会',
+    'AIキャラクター市民権運動',
+    '推し活経済特区',
+    '同人誌保護条約',
+    'ボカロ転生症候群',
+    '声優定年制廃止運動',
+    '二次元納税制度',
+    'コスプレ国家資格',
+    'メタバース不動産登記法',
+    'AIへの謝罪運動',
+    '深夜アニメ保護区',
+    '推し経費全額控除法'
+  ];
+  search(pickRandom(picks));
+}
+
 // ===== TODAY ITEM NAV =====
 function todayItemNav(keyword) {
   var intro = document.getElementById('screen-intro');
