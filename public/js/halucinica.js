@@ -71,8 +71,6 @@ async function initHalucinica() {
     });
   }
 
-  // 初回プリフェッチ: ポータルキーワードを裏で事前取得
-  prefetchArticles(['ボカロ', 'VTuber', '推し活']);
 }
 
 // ===== PREFETCH (裏で記事を事前生成してキャッシュ) =====
@@ -870,4 +868,8 @@ function exitLoginScreen() {
 }
 
 // ===== BOOTSTRAP =====
-document.addEventListener('DOMContentLoaded', initHalucinica);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initHalucinica);
+} else {
+  initHalucinica();
+}
