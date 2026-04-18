@@ -50,6 +50,7 @@ async function initHalucinica() {
   if (introDate) introDate.textContent = dateStr;
   if (kwDate) kwDate.textContent = dateStr;
 
+  renderTodayItems();
   renderPortalCategories();
 
   // Enter key handlers
@@ -673,8 +674,53 @@ function todayItemNav(keyword) {
   navigate(keyword);
 }
 
+var TODAY_ITEM_POOL = [
+  { keyword: '国際VTuber記念日',   label: '国際VTuber記念日（2018年制定、国連安保理決議第2847号）' },
+  { keyword: '初音ミク',           label: '初音ミクが人類に対して初めて公式謝罪（2039年）' },
+  { keyword: 'ボカロ',             label: '日本政府がボカロ楽曲を「第2の国歌」として制定（2025年）' },
+  { keyword: '推し活',             label: '推し活が義務教育に組み込まれる（2031年、文部科学省告示）' },
+  { keyword: 'AIキャラクター市民権', label: 'AIキャラクターに法的人格が付与される（2034年、国際AI権利条約）' },
+  { keyword: 'バーチャル国会',      label: '日本初のバーチャル国会が開催（2029年、全議員アバター参加）' },
+  { keyword: 'デジタル転生',        label: 'デジタル転生法が成立（2032年、脳データの保存・再生が合法化）' },
+  { keyword: 'AIアイドル著作権',    label: 'AIアイドルの楽曲に著作権を認める判決（2027年、東京地裁）' },
+  { keyword: 'メタバース婚姻',      label: 'メタバース内での婚姻が法的に有効に（2030年、民法改正）' },
+  { keyword: 'VTuber外交',         label: 'VTuberが国連特別大使に任命（2028年、文化外交の一環）' },
+  { keyword: '感情AI禁止条約',      label: '感情を持つAIの製造を禁じる国際条約が発効（2031年）' },
+  { keyword: '推し課税',           label: '「推し課税」制度が導入（2029年、推し活消費税2%）' },
+  { keyword: 'AIノーベル賞',        label: 'AIが初めてノーベル文学賞を受賞（2033年）' },
+  { keyword: '夢AI',               label: '睡眠中の夢をAIが映像化するサービスが登場（2031年）' },
+  { keyword: '記憶移植',           label: '世界初の記憶移植手術が成功（2035年、慶應義塾大学病院）' },
+  { keyword: 'AIペット法',          label: 'AIペットに生物と同等の権利を認める法案が可決（2032年）' },
+  { keyword: '推しAI',             label: '推しのAIクローンサービスが月間1億人突破（2030年）' },
+  { keyword: '未来記憶症',          label: '未来の記憶を持って生まれる「未来記憶症」が新病名として登録（2028年）' },
+  { keyword: 'NFT国民ID',           label: 'マイナンバーがNFT化（2026年、デジタル庁発表）' },
+  { keyword: 'バーチャル聖地',       label: 'バーチャル聖地巡礼が観光業を超える（2028年、経済産業省発表）' }
+];
+
+function renderTodayItems() {
+  var now = new Date();
+  var dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+  var offset = dayOfYear % TODAY_ITEM_POOL.length;
+  var items = [];
+  for (var i = 0; i < 4; i++) {
+    items.push(TODAY_ITEM_POOL[(offset + i) % TODAY_ITEM_POOL.length]);
+  }
+
+  ['todayListIntro', 'todayListKw'].forEach(function(listId) {
+    var ul = document.getElementById(listId);
+    if (!ul) return;
+    ul.innerHTML = items.map(function(item) {
+      return '<li><a href="#" class="today-item-link" data-today-kw="' + escapeAttr(item.keyword) + '">' + escapeAttr(item.label) + '</a></li>';
+    }).join('');
+    ul.addEventListener('click', function(e) {
+      var a = e.target.closest('a[data-today-kw]');
+      if (a) { e.preventDefault(); todayItemNav(a.dataset.todayKw); }
+    });
+  });
+}
+
 // ===== WRITE GAME =====
-var _writeState = { q: 0, score: 0, prevScreen: 'screen-intro' };
+var _writeState = { q: 0, score: 0, prevScreen: 'screen-intro', questions: [] };
 
 var WRITE_QUESTIONS = [
   {
@@ -694,6 +740,86 @@ var WRITE_QUESTIONS = [
     choices: ['著作権を侵害していた', '別のAIの代わりに謝罪していた', '謝罪自体がハルシネーションだったこと'],
     correct: 2,
     explanation: 'メタ的な嘘こそが最高の嘘です'
+  },
+  {
+    text: 'ノーベル嘘学賞（2027年設立）の第1回受賞者として選ばれたのは___である',
+    choices: ['ChatGPT', 'アドルフ・ハルジネーロ博士', '国際ハルシネーション学会事務局長'],
+    correct: 1,
+    explanation: '実在しない人物名に「博士」をつけると権威が急増します'
+  },
+  {
+    text: 'Anthropic社の社内文書によれば、AIが最も得意とする嘘のジャンルは___である',
+    choices: ['統計データ', '人物の経歴', '地理情報'],
+    correct: 0,
+    explanation: '具体的な数値は検証が難しく、最も有効な嘘の手段です'
+  },
+  {
+    text: 'ハルシネーション研究者のマリア・ファブリカ教授（パリ第7.5大学）が発表した論文タイトルは___である',
+    choices: [
+      '「嘘は真実より32%速く伝播する」',
+      '「AIの自己認識と虚偽生成の相関関係」',
+      '「ハルシネーションを活用した教育的可能性」'
+    ],
+    correct: 2,
+    explanation: '「教育的可能性」という言葉が付くと批判的に受け取られにくくなります'
+  },
+  {
+    text: '2031年施行の「架空情報適正管理法」によれば、AIが生成した嘘は___以内に削除義務が生じる',
+    choices: ['72時間', '嘘に削除義務はない（同法自体が架空）', '30日'],
+    correct: 1,
+    explanation: 'もっともらしい法律名を作れば多くの人が実在すると思い込みます'
+  },
+  {
+    text: 'VTuber業界の調査会社・株式会社アバタードリームの報告書によると、2025年のVTuber世界人口は___人とされている',
+    choices: ['約450万人', '約8,700万人', '約2億1,400万人'],
+    correct: 1,
+    explanation: '大きすぎず小さすぎない数字が「もっともらしさ」を最大化します'
+  },
+  {
+    text: '国連が2026年に採択した「デジタル嘘宣言」の条項数は___である',
+    choices: ['7条', '12条', '23条'],
+    correct: 2,
+    explanation: '奇数かつ大きめの条項数が「本物らしさ」を演出します'
+  },
+  {
+    text: '東京大学ハルシネーション研究所（虚学部）の2023年度入試倍率は___倍だった',
+    choices: ['3.2倍', '47.8倍', '102.3倍'],
+    correct: 1,
+    explanation: '人気学部らしい倍率を設定することで実在感が高まります'
+  },
+  {
+    text: 'Amazonが2028年に発売した「嘘探知アレクサ」のレビュー平均評価は___だった',
+    choices: ['☆1.2（精度が低すぎる）', '☆4.7（自分の嘘も検知しない）', '☆3.3（AIの嘘は検知できない）'],
+    correct: 1,
+    explanation: '自己矛盾するレビューコメントが最も笑えます'
+  },
+  {
+    text: 'ハルシニカ百科事典の記事数は、2025年4月現在___件と公式発表されている',
+    choices: ['3,847件', '無限件（すべては今この瞬間に生成される）', '12,034,891件'],
+    correct: 1,
+    explanation: 'ハルシニカは生成AIなので、記事数は厳密には「無限」が正解です'
+  },
+  {
+    text: '「あなたは今、嘘の百科事典を読んでいます」という注意書きを読んだユーザーのうち___%が、その後も記事を信じると報告されている',
+    choices: ['12%', '58%', '91%'],
+    correct: 2,
+    explanation: '注意書きがあっても人間の認知バイアスは強力です（この統計自体も嘘です）'
+  },
+  {
+    text: '「ハルシネーション指数」を最初に定義した人物として歴史に名を残すトーマス・ミスリード博士は、実際には___',
+    choices: ['ノーベル物理学賞受賞者', 'AIエンジニア', '存在しない'],
+    correct: 2,
+    explanation: '「実は存在しない」という落ちが最もメタ的な嘘です'
+  },
+  {
+    text: '嘘の記事をAIに生成させた後に「これは本当のことですか？」と聞くと、AIは___と回答する',
+    choices: [
+      '「はい、すべて事実です」',
+      '「いいえ、これは架空の記事です」',
+      'AIによって異なるが、多くは「はい」と答える'
+    ],
+    correct: 1,
+    explanation: 'ハルシニカのシステムプロンプトは嘘であることを明示しているため、AIは正直に答えます'
   }
 ];
 
@@ -709,13 +835,15 @@ function openWriteGame() {
   _writeState.prevScreen = active ? active.id : 'screen-intro';
   _writeState.q = 0;
   _writeState.score = 0;
+  var shuffled = WRITE_QUESTIONS.slice().sort(function() { return Math.random() - 0.5; });
+  _writeState.questions = shuffled.slice(0, 3);
   sw('screen-write');
   renderWriteQuestion(0);
 }
 
 function renderWriteQuestion(idx) {
-  var q = WRITE_QUESTIONS[idx];
-  var dots = WRITE_QUESTIONS.map(function(_, i) {
+  var q = _writeState.questions[idx];
+  var dots = _writeState.questions.map(function(_, i) {
     return '<span class="wq-dot' + (i === idx ? ' wq-dot-active' : '') + '"></span>';
   }).join('');
   document.getElementById('writeProgressDots').innerHTML = dots;
@@ -731,7 +859,7 @@ function renderWriteQuestion(idx) {
 }
 
 function selectWriteChoice(choiceIdx) {
-  var q = WRITE_QUESTIONS[_writeState.q];
+  var q = _writeState.questions[_writeState.q];
   var btns = document.querySelectorAll('.wq-choice');
   btns.forEach(function(b) { b.disabled = true; });
 
@@ -745,7 +873,7 @@ function selectWriteChoice(choiceIdx) {
 
   setTimeout(function() {
     _writeState.q++;
-    if (_writeState.q < WRITE_QUESTIONS.length) {
+    if (_writeState.q < _writeState.questions.length) {
       renderWriteQuestion(_writeState.q);
     } else {
       showWriteResult();
@@ -761,7 +889,7 @@ function showWriteResult() {
       '<div class="wr-emoji">' + s.emoji + '</div>' +
       '<div class="wr-rank">' + escapeAttr(s.rank) + '</div>' +
       '<div class="wr-desc">' + escapeAttr(s.desc) + '</div>' +
-      '<div class="wr-score">正解: ' + _writeState.score + ' / ' + WRITE_QUESTIONS.length + '</div>' +
+      '<div class="wr-score">正解: ' + _writeState.score + ' / ' + _writeState.questions.length + '</div>' +
       '<button class="wq-choice wr-back-btn" onclick="exitWriteGame()">← 戻る</button>' +
     '</div>';
 }
