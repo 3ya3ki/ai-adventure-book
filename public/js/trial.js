@@ -7,7 +7,7 @@ const Trial = (() => {
     judge:       { name: '裁判長',  icon: '⚖️',  color: '#d4a843' },
     prosecution: { name: '検事',    icon: '⚔️',  color: '#ef4444' },
     defense:     { name: '弁護人',  icon: '🛡️',  color: '#3b82f6' },
-    defendant:   { name: '証人AI', icon: '😰',  color: '#a78bfa' },
+    defendant:   { name: '被告人AI', icon: '😰',  color: '#a78bfa' },
   };
 
   // === Embedded fallback mock data (10 themes) ===
